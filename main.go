@@ -63,10 +63,65 @@ func ServeAd(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	}
 
 	if res == nil {
+		log.Info("no ads to serve for extension")
 		res = []interface{}{}
 	}
 
 	js, err := MarshalJSON(res)
+	if err != nil {
+		log.Error("failed to marshal json ", err)
+		http.Error(w, "Server Internal Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func ServeToilet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	var res []interface{}
+
+	cf, err := fetchCodefund(r, "89dc8cbd-475f-4941-bfa8-03e509b8f897")
+	if err != nil {
+		log.Warn("failed to fetch ad from Codefund ", err)
+	} else if cf != nil {
+		res = []interface{}{*cf}
+	}
+
+	if res == nil {
+		bsa, err := fetchBsa(r)
+		if err != nil {
+			log.Warn("failed to fetch ad from BSA ", err)
+		} else if bsa != nil {
+			res = []interface{}{*bsa}
+		}
+	}
+
+	if res == nil {
+		log.Info("no ads to serve for toilet")
+		res = []interface{}{}
+	}
+
+	js, err := MarshalJSON(res)
+	if err != nil {
+		log.Error("failed to marshal json ", err)
+		http.Error(w, "Server Internal Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func ServeBsa(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	res, err := sendBsaRequest(r)
+	if err != nil {
+		log.Warn("failed to fetch ad from BSA ", err)
+		http.Error(w, "Server Internal Error", http.StatusInternalServerError)
+		return
+	}
+
+	js, err := MarshalJSON(res.Ads)
 	if err != nil {
 		log.Error("failed to marshal json ", err)
 		http.Error(w, "Server Internal Error", http.StatusInternalServerError)
@@ -82,6 +137,8 @@ func createRouter() *httprouter.Router {
 
 	router.GET("/health", Health)
 	router.GET("/a", ServeAd)
+	router.GET("/a/toilet", ServeToilet)
+	router.GET("/a/bsa", ServeBsa)
 	return router
 }
 

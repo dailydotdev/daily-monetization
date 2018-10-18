@@ -19,7 +19,7 @@ type BsaResponse struct {
 
 var hystrixBsa = "BSA"
 
-var fetchBsa = func(r *http.Request) (*BsaAd, error) {
+func sendBsaRequest(r *http.Request) (BsaResponse, error) {
 	var res BsaResponse
 	ip := r.RemoteAddr
 	//ip = "208.98.185.89"
@@ -27,6 +27,15 @@ var fetchBsa = func(r *http.Request) (*BsaAd, error) {
 	req = req.WithContext(r.Context())
 
 	err := getJsonHystrix(hystrixBsa, req, &res)
+	if err != nil {
+		return BsaResponse{}, err
+	}
+
+	return res, nil
+}
+
+var fetchBsa = func(r *http.Request) (*BsaAd, error) {
+	res, err := sendBsaRequest(r)
 	if err != nil {
 		return nil, err
 	}
