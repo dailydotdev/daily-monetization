@@ -1,0 +1,43 @@
+steps:
+- name: 'gcr.io/cloud-builders/go'
+  args: ['install', '.']
+  env: ['PROJECT_ROOT=$REPO_NAME']
+- name: 'docker/compose:1.22.0'
+  args: ['up', '-d']
+- name: 'docker/compose:1.22.0'
+  args: ['run', 'wait']
+- name: 'gcr.io/cloud-builders/go'
+  args: ['test']
+  env:
+  - PROJECT_ROOT=$REPO_NAME
+  - GCLOUD_PROJECT=$PROJECT_ID
+  - CODEFUND_API_KEY=''
+  - DB_CONNECTION_STRING=root:12345@(mysql:3306)/test
+  - CAMPAIGNS_COUNT=1
+- name: 'gcr.io/cloud-builders/go'
+  args: ['build', '-a', '-installsuffix', 'cgo', '-o', 'main']
+  env:
+  - PROJECT_ROOT=$REPO_NAME
+  - CGO_ENABLED=0
+  - GOOS=linux
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME:$SHORT_SHA', '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME:$BRANCH_NAME', '.']
+#- name: gcr.io/cloud-builders/gcloud
+#  args:
+#  - kms
+#  - decrypt
+#  - --ciphertext-file=./helm/values/prod.yaml.enc
+#  - --plaintext-file=./helm/values/prod.yaml
+#  - --location=global
+#  - --keyring=daily-ci
+#  - --key=daily-redirector-ci
+#- name: 'gcr.io/$PROJECT_ID/helm'
+#  entrypoint: 'bash'
+#  args: ['-c', '([[ "$BRANCH_NAME" == "master" ]] && /builder/helm.bash upgrade daily-redirector ./helm/$REPO_NAME --namespace daily -f ./helm/values/prod.yaml --set-string image.tag=$SHORT_SHA -i) || ([[ "$BRANCH_NAME" != "master" ]] && echo "Skipping...")']
+#  env:
+#  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-f'
+#  - 'CLOUDSDK_CONTAINER_CLUSTER=prod'
+#  - 'GCLOUD_PROJECT=devkit-prod'
+
+images: ['gcr.io/$PROJECT_ID/$REPO_NAME:$SHORT_SHA', 'gcr.io/$PROJECT_ID/$REPO_NAME:$BRANCH_NAME']
+
