@@ -6,6 +6,5 @@ RUN apk update && \
 
 EXPOSE 9090
 
-ADD tmpl /tmpl
 ADD main /
 CMD ["/main"]
