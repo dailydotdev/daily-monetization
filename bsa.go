@@ -21,7 +21,7 @@ var hystrixBsa = "BSA"
 
 func sendBsaRequest(r *http.Request) (BsaResponse, error) {
 	var res BsaResponse
-	ip := r.RemoteAddr
+	ip := getIpAddress(r)
 	//ip = "208.98.185.89"
 	req, _ := http.NewRequest("GET", "https://srv.buysellads.com/ads/CKYI623Y.json?segment=placement:dailynowco&forwardedip="+ip, nil)
 	req = req.WithContext(r.Context())

@@ -40,7 +40,7 @@ var cfApiKey = os.Getenv("CODEFUND_API_KEY")
 
 var fetchCodefund = func(r *http.Request, propertyId string) (*CodefundAd, error) {
 	var res CodefundResponse
-	ip := r.RemoteAddr
+	ip := getIpAddress(r)
 	body, err := json.Marshal(CodefundRequest{Ip: ip, UserAgent: r.UserAgent()})
 	if err != nil {
 		return nil, err

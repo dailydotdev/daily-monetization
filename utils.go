@@ -79,3 +79,11 @@ func shiftPath(p string) (head, tail string) {
 	}
 	return p[1:i], p[i:]
 }
+
+func getIpAddress(r *http.Request) string {
+	ip := r.Header.Get("x-forwarded-for")
+	if len(ip) == 0 {
+		return r.RemoteAddr
+	}
+	return strings.Split(ip, ",")[0]
+}
