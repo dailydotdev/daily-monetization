@@ -22,22 +22,22 @@ steps:
   - GOOS=linux
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME:$SHORT_SHA', '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME:$BRANCH_NAME', '.']
-#- name: gcr.io/cloud-builders/gcloud
-#  args:
-#  - kms
-#  - decrypt
-#  - --ciphertext-file=./helm/values/prod.yaml.enc
-#  - --plaintext-file=./helm/values/prod.yaml
-#  - --location=global
-#  - --keyring=daily-ci
-#  - --key=daily-redirector-ci
-#- name: 'gcr.io/$PROJECT_ID/helm'
-#  entrypoint: 'bash'
-#  args: ['-c', '([[ "$BRANCH_NAME" == "master" ]] && /builder/helm.bash upgrade daily-redirector ./helm/$REPO_NAME --namespace daily -f ./helm/values/prod.yaml --set-string image.tag=$SHORT_SHA -i) || ([[ "$BRANCH_NAME" != "master" ]] && echo "Skipping...")']
-#  env:
-#  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-f'
-#  - 'CLOUDSDK_CONTAINER_CLUSTER=prod'
-#  - 'GCLOUD_PROJECT=devkit-prod'
+- name: gcr.io/cloud-builders/gcloud
+  args:
+  - kms
+  - decrypt
+  - --ciphertext-file=./helm/values/prod.yaml.enc
+  - --plaintext-file=./helm/values/prod.yaml
+  - --location=global
+  - --keyring=daily-ci
+  - --key=daily-monetization-ci
+- name: 'gcr.io/$PROJECT_ID/helm'
+  entrypoint: 'bash'
+  args: ['-c', '([[ "$BRANCH_NAME" == "master" ]] && /builder/helm.bash upgrade daily-monetization ./helm/$REPO_NAME --namespace daily -f ./helm/values/prod.yaml --set-string image.tag=$SHORT_SHA -i) || ([[ "$BRANCH_NAME" != "master" ]] && echo "Skipping...")']
+  env:
+  - 'CLOUDSDK_COMPUTE_ZONE=us-central1-f'
+  - 'CLOUDSDK_CONTAINER_CLUSTER=prod'
+  - 'GCLOUD_PROJECT=devkit-prod'
 
 images: ['gcr.io/$PROJECT_ID/$REPO_NAME:$SHORT_SHA', 'gcr.io/$PROJECT_ID/$REPO_NAME:$BRANCH_NAME']
 

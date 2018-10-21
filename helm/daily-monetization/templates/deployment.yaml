@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "daily-monetization.fullname" . }}
+  labels:
+    app: {{ template "daily-monetization.name" . }}
+    chart: {{ template "daily-monetization.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "daily-monetization.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      annotations:
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        checksum/files: {{ include (print $.Template.BasePath "/secret-files.yaml") . | sha256sum }}
+        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      labels:
+        app: {{ template "daily-monetization.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          env:
+          - name: ENV
+            value: PROD
+          - name: PORT
+            value: "9090"
+          - name: GOOGLE_APPLICATION_CREDENTIALS
+            value: "/etc/config/serviceAccount.json"
+          - name: CAMPAIGNS_COUNT
+            valueFrom:
+              configMapKeyRef:
+                name: {{ template "daily-monetization.fullname" . }}
+                key: CAMPAIGNS_COUNT
+          - name: GCLOUD_PROJECT
+            valueFrom:
+              configMapKeyRef:
+                name: {{ template "daily-monetization.fullname" . }}
+                key: GCLOUD_PROJECT
+          - name: DB_CONNECTION_STRING
+            valueFrom:
+              secretKeyRef:
+                name: {{ template "daily-monetization.fullname" . }}
+                key: DB_CONNECTION_STRING
+          - name: MIGRATIONS_SOURCE
+            valueFrom:
+              secretKeyRef:
+                name: {{ template "daily-monetization.fullname" . }}
+                key: MIGRATIONS_SOURCE
+          - name: CODEFUND_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ template "daily-monetization.fullname" . }}
+                key: CODEFUND_API_KEY
+          volumeMounts:
+          - name: config
+            mountPath: "/etc/config"
+            readOnly: true
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+      volumes:
+      - name: config
+        secret:
+          secretName: {{ template "daily-monetization.fullname" . }}-files
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
