@@ -163,14 +163,6 @@
   revision = "0b12d6b5"
 
 [[projects]]
-  digest = "1:f97285a3b0a496dcf8801072622230d513f69175665d94de60eb042d03387f6c"
-  name = "github.com/julienschmidt/httprouter"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "348b672cd90d8190f8240323e372ecd1e66b59dc"
-  version = "v1.2.0"
-
-[[projects]]
   digest = "1:0a69a1c0db3591fcefb47f115b224592c8dfa4368b7ba9fae509d5e16cdc95c8"
   name = "github.com/konsorten/go-windows-terminal-sequences"
   packages = ["."]
@@ -224,6 +216,19 @@
   pruneopts = "UT"
   revision = "79993219becaa7e29e3b60cb67f5b8e82dee11d6"
   version = "v0.17.0"
+
+[[projects]]
+  digest = "1:a51a1c97b728b00cc514dfe5f78aad3354491792e69b881ea88176dd3fa30ef6"
+  name = "go.uber.org/automaxprocs"
+  packages = [
+    ".",
+    "internal/cgroups",
+    "internal/runtime",
+    "maxprocs",
+  ]
+  pruneopts = "UT"
+  revision = "946a8391268aea0a60a86403988ff3ab4b604a83"
+  version = "v1.2.0"
 
 [[projects]]
   branch = "master"
@@ -412,11 +417,11 @@
     "github.com/golang-migrate/migrate/database/mysql",
     "github.com/golang-migrate/migrate/source/file",
     "github.com/golang-migrate/migrate/source/github",
-    "github.com/julienschmidt/httprouter",
     "github.com/sirupsen/logrus",
     "github.com/stretchr/testify/assert",
     "go.opencensus.io/plugin/ochttp",
     "go.opencensus.io/trace",
+    "go.uber.org/automaxprocs",
     "google.golang.org/api/option",
   ]
   solver-name = "gps-cdcl"

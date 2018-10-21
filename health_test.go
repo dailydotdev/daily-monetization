@@ -15,7 +15,7 @@ func TestHealthCheck(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	router := createRouter()
+	router := createApp()
 	router.ServeHTTP(rr, req)
 
 	assert.Equal(t, rr.Code, http.StatusOK, "wrong status code")

@@ -49,7 +49,7 @@ func TestCampaignAvailable(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	router := createRouter()
+	router := createApp()
 	router.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
@@ -78,7 +78,7 @@ func TestCampaignNotAvailable(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	router := createRouter()
+	router := createApp()
 	router.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
@@ -110,7 +110,7 @@ func TestCampaignFail(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	router := createRouter()
+	router := createApp()
 	router.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
@@ -141,7 +141,7 @@ func TestCodefundNotAvailable(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	router := createRouter()
+	router := createApp()
 	router.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
@@ -174,7 +174,7 @@ func TestCodefundFail(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	router := createRouter()
+	router := createApp()
 	router.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
@@ -194,7 +194,7 @@ func TestBsaNotAvailable(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	router := createRouter()
+	router := createApp()
 	router.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
@@ -216,7 +216,7 @@ func TestBsaNotFail(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	router := createRouter()
+	router := createApp()
 	router.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")

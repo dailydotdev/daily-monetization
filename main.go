@@ -5,10 +5,10 @@ import (
 	"contrib.go.opencensus.io/exporter/stackdriver/propagation"
 	"fmt"
 	"github.com/afex/hystrix-go/hystrix"
-	"github.com/julienschmidt/httprouter"
 	log "github.com/sirupsen/logrus"
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/trace"
+	_ "go.uber.org/automaxprocs"
 	"google.golang.org/api/option"
 	"math/rand"
 	"net/http"
@@ -27,11 +27,7 @@ type Ad struct {
 var gcpOpts []option.ClientOption
 var campaignsCount, _ = strconv.Atoi(os.Getenv("CAMPAIGNS_COUNT"))
 
-func Health(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
-	fmt.Fprintf(w, "OK")
-}
-
-func ServeAd(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func ServeAd(w http.ResponseWriter, r *http.Request) {
 	var res []interface{}
 
 	camps, err := fetchCampaigns(r.Context(), time.Now())
@@ -67,7 +63,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		res = []interface{}{}
 	}
 
-	js, err := MarshalJSON(res)
+	js, err := marshalJSON(res)
 	if err != nil {
 		log.Error("failed to marshal json ", err)
 		http.Error(w, "Server Internal Error", http.StatusInternalServerError)
@@ -78,7 +74,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.Write(js)
 }
 
-func ServeToilet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func ServeToilet(w http.ResponseWriter, r *http.Request) {
 	var res []interface{}
 
 	cf, err := fetchCodefund(r, "89dc8cbd-475f-4941-bfa8-03e509b8f897")
@@ -102,7 +98,7 @@ func ServeToilet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		res = []interface{}{}
 	}
 
-	js, err := MarshalJSON(res)
+	js, err := marshalJSON(res)
 	if err != nil {
 		log.Error("failed to marshal json ", err)
 		http.Error(w, "Server Internal Error", http.StatusInternalServerError)
@@ -113,7 +109,7 @@ func ServeToilet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.Write(js)
 }
 
-func ServeBsa(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func ServeBsa(w http.ResponseWriter, r *http.Request) {
 	res, err := sendBsaRequest(r)
 	if err != nil {
 		log.Warn("failed to fetch ad from BSA ", err)
@@ -121,7 +117,7 @@ func ServeBsa(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 		return
 	}
 
-	js, err := MarshalJSON(res.Ads)
+	js, err := marshalJSON(res.Ads)
 	if err != nil {
 		log.Error("failed to marshal json ", err)
 		http.Error(w, "Server Internal Error", http.StatusInternalServerError)
@@ -132,14 +128,65 @@ func ServeBsa(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	w.Write(js)
 }
 
-func createRouter() *httprouter.Router {
-	router := httprouter.New()
+type HealthHandler struct{}
+type AdsHandler struct{}
+type App struct {
+	HealthHandler *HealthHandler
+	AdsHandler    *AdsHandler
+}
 
-	router.GET("/health", Health)
-	router.GET("/a", ServeAd)
-	router.GET("/a/toilet", ServeToilet)
-	router.GET("/a/bsa", ServeBsa)
-	return router
+func (h *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var head string
+	head, r.URL.Path = shiftPath(r.URL.Path)
+
+	switch head {
+	case "health":
+		h.HealthHandler.ServeHTTP(w, r)
+		return
+	case "a":
+		h.AdsHandler.ServeHTTP(w, r)
+		return
+	}
+
+	http.Error(w, "Not Found", http.StatusNotFound)
+}
+
+func (h *AdsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		if r.URL.Path == "/" {
+			ServeAd(w, r)
+			return
+		}
+
+		if r.URL.Path == "/toilet" {
+			ServeToilet(w, r)
+			return
+		}
+
+		_, tail := shiftPath(r.URL.Path)
+		if tail == "/" {
+			ServeBsa(w, r)
+			return
+		}
+	}
+
+	http.Error(w, "Not Found", http.StatusNotFound)
+}
+
+func (h *HealthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/" && r.Method == "GET" {
+		fmt.Fprintf(w, "OK")
+		return
+	}
+
+	http.Error(w, "Not Found", http.StatusNotFound)
+}
+
+func createApp() *App {
+	return &App{
+		HealthHandler: new(HealthHandler),
+		AdsHandler:    new(AdsHandler),
+	}
 }
 
 func init() {
@@ -182,10 +229,10 @@ func main() {
 	initializeDatabase()
 	defer tearDatabase()
 
-	router := createRouter()
+	app := createApp()
 	addr := fmt.Sprintf(":%s", getEnv("PORT", "9090"))
 	log.Info("server is listening to ", addr)
-	err := http.ListenAndServe(addr, &ochttp.Handler{Handler: router, Propagation: &propagation.HTTPFormat{}}) // set listen addr
+	err := http.ListenAndServe(addr, &ochttp.Handler{Handler: app, Propagation: &propagation.HTTPFormat{}}) // set listen addr
 	if err != nil {
 		log.Fatal("failed to start listening ", err)
 	}

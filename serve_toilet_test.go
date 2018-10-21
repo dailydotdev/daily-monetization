@@ -27,7 +27,7 @@ func TestToiletCodefundAvailable(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	router := createRouter()
+	router := createApp()
 	router.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
@@ -59,7 +59,7 @@ func TestToiletCodefundFail(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	router := createRouter()
+	router := createApp()
 	router.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
@@ -78,7 +78,7 @@ func TestToiletBsaNotAvailable(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	router := createRouter()
+	router := createApp()
 	router.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
@@ -99,7 +99,7 @@ func TestToiletBsaNotFail(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	router := createRouter()
+	router := createApp()
 	router.ServeHTTP(rr, req)
 
 	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
