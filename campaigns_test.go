@@ -25,7 +25,11 @@ func TestAddAndFetchCampaigns(t *testing.T) {
 	defer tearDatabase()
 	defer dropDatabase()
 
-	err := addCampaign(context.Background(), camp, time.Now().Add(time.Hour*-1), time.Now().Add(time.Hour))
+	err := addCampaign(context.Background(), ScheduledCampaignAd{
+		CampaignAd: camp,
+		Start:      time.Now().Add(time.Hour * -1),
+		End:        time.Now().Add(time.Hour),
+	})
 	assert.Nil(t, err)
 
 	var res []CampaignAd
@@ -40,7 +44,11 @@ func TestFetchExpiredCampaigns(t *testing.T) {
 	defer tearDatabase()
 	defer dropDatabase()
 
-	err := addCampaign(context.Background(), camp, time.Now().Add(time.Hour*-2), time.Now().Add(time.Hour*-1))
+	err := addCampaign(context.Background(), ScheduledCampaignAd{
+		CampaignAd: camp,
+		Start:      time.Now().Add(time.Hour * -2),
+		End:        time.Now().Add(time.Hour * -1),
+	})
 	assert.Nil(t, err)
 
 	var res []CampaignAd

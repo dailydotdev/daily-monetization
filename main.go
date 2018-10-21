@@ -221,6 +221,11 @@ func init() {
 	} else {
 		httpClient = &http.Client{}
 	}
+
+	err := configurePubsub()
+	if err != nil {
+		log.Fatal("failed to initialize google pub/sub client ", err)
+	}
 }
 
 func main() {
@@ -228,6 +233,8 @@ func main() {
 
 	initializeDatabase()
 	defer tearDatabase()
+
+	go subscribeToNewAd()
 
 	app := createApp()
 	addr := fmt.Sprintf(":%s", getEnv("PORT", "9090"))

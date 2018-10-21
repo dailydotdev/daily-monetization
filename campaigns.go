@@ -13,10 +13,16 @@ type CampaignAd struct {
 	Ratio       float32
 }
 
-var addCampaign = func(ctx context.Context, camp CampaignAd, start time.Time, end time.Time) error {
-	return hystrix.Do(hystrixDb,
-		func() error {
-			_, err := addCampStmt.ExecContext(ctx, camp.Id, camp.Description, camp.Link, camp.Image, camp.Ratio, camp.Placeholder, camp.Source, start, end)
+type ScheduledCampaignAd struct {
+	CampaignAd
+	Start time.Time
+	End   time.Time
+}
+
+var addCampaign = func(ctx context.Context, camp ScheduledCampaignAd) error {
+	return hystrix.DoC(ctx, hystrixDb,
+		func(ctx context.Context) error {
+			_, err := addCampStmt.ExecContext(ctx, camp.Id, camp.Description, camp.Link, camp.Image, camp.Ratio, camp.Placeholder, camp.Source, camp.Start, camp.End)
 			if err != nil {
 				return err
 			}
@@ -27,8 +33,8 @@ var addCampaign = func(ctx context.Context, camp CampaignAd, start time.Time, en
 
 var fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
 	output := make(chan []CampaignAd, 1)
-	errors := hystrix.Go(hystrixDb,
-		func() error {
+	errors := hystrix.GoC(ctx, hystrixDb,
+		func(ctx context.Context) error {
 			rows, err := campStmt.QueryContext(ctx, timestamp, timestamp)
 			if err != nil {
 				return err
