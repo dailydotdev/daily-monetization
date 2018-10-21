@@ -17,13 +17,6 @@ import (
 	"time"
 )
 
-type Ad struct {
-	Description string
-	Image       string
-	Link        string
-	Source      string
-}
-
 var gcpOpts []option.ClientOption
 var campaignsCount, _ = strconv.Atoi(os.Getenv("CAMPAIGNS_COUNT"))
 

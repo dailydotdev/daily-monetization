@@ -6,6 +6,13 @@ import (
 	"time"
 )
 
+type Ad struct {
+	Description string
+	Image       string
+	Link        string
+	Source      string
+}
+
 type CampaignAd struct {
 	Ad
 	Id          string
