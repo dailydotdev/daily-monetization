@@ -3,7 +3,6 @@ package main
 import (
 	"cloud.google.com/go/pubsub"
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	log "github.com/sirupsen/logrus"
 	"os"
@@ -41,17 +40,8 @@ func subscribeToNewAd() {
 	ctx := context.Background()
 	err := pubsubClient.Subscription(pubsubNewAdSub).Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
 		var ad ScheduledCampaignAd
-		var data []byte
-
-		l, err := base64.StdEncoding.Decode(data, msg.Data)
-		if err != nil {
-			log.Errorf("failed to decode message from base64 %v", err)
-			msg.Ack()
-			return
-		}
-
-		if err := json.Unmarshal(data[:l], &ad); err != nil {
-			log.WithField("msg", msg).Errorf("failed to decode message %v", err)
+		if err := json.Unmarshal(msg.Data, &ad); err != nil {
+			log.Errorf("failed to decode message %v", err)
 			msg.Ack()
 			return
 		}
