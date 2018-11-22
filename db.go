@@ -54,7 +54,7 @@ func dropDatabase() {
 
 func initializeDatabase() {
 	var err error
-	db, err = sql.Open("mysql", dbConnString)
+	db, err = sql.Open("mysql", dbConnString+"?charset=utf8mb4,utf8")
 	if err != nil {
 		log.Fatal("failed to open sql ", err)
 	}
