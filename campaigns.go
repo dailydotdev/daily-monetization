@@ -11,6 +11,7 @@ type Ad struct {
 	Image       string
 	Link        string
 	Source      string
+	Company     string
 }
 
 type CampaignAd struct {
@@ -55,6 +56,7 @@ var fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignA
 				if err != nil {
 					return err
 				}
+				camp.Company = camp.Source
 				res = append(res, camp)
 			}
 			err = rows.Err()

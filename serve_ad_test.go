@@ -16,6 +16,7 @@ var ad = Ad{
 	Image:       "image",
 	Link:        "http://link.com",
 	Description: "desc",
+	Company:     "company",
 }
 
 var campaignNotAvailable = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
@@ -109,7 +110,6 @@ func TestCodefundNotAvailable(t *testing.T) {
 		{
 			Ad:              ad,
 			Pixel:           []string{"pixel"},
-			Company:         "company",
 			BackgroundColor: "#ffffff",
 		},
 	}
@@ -139,7 +139,6 @@ func TestCodefundFail(t *testing.T) {
 		{
 			Ad:              ad,
 			Pixel:           []string{"pixel"},
-			Company:         "company",
 			BackgroundColor: "#ffffff",
 		},
 	}

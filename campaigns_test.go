@@ -16,6 +16,7 @@ var camp = CampaignAd{
 		Image:       "image",
 		Link:        "http://link.com",
 		Description: "desc",
+		Company:     "source",
 	},
 }
 

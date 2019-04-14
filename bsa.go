@@ -8,7 +8,6 @@ import (
 
 type BsaAd struct {
 	Ad
-	Company         string
 	Pixel           []string
 	BackgroundColor string
 }

@@ -12,9 +12,8 @@ import (
 func TestToiletCodefundAvailable(t *testing.T) {
 	exp := []CodefundAd{
 		{
-			Ad:      ad,
-			Pixel:   []string{"pixel"},
-			Company: "company",
+			Ad:    ad,
+			Pixel: []string{"pixel"},
 		},
 	}
 
@@ -42,7 +41,6 @@ func TestToiletCodefundFail(t *testing.T) {
 		{
 			Ad:              ad,
 			Pixel:           []string{"pixel"},
-			Company:         "company",
 			BackgroundColor: "#ffffff",
 		},
 	}

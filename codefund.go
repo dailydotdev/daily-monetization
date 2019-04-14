@@ -10,8 +10,7 @@ import (
 
 type CodefundAd struct {
 	Ad
-	Company string
-	Pixel   []string
+	Pixel []string
 }
 
 type CodefundImage struct {
@@ -60,7 +59,8 @@ var fetchCodefund = func(r *http.Request, propertyId string) (*CodefundAd, error
 		return nil, nil
 	}
 
-	ad := CodefundAd{Company: "CodeFund"}
+	ad := CodefundAd{}
+	ad.Company = "CodeFund"
 	ad.Description = res.Headline + " " + res.Description
 	ad.Link = res.Link
 	ad.Source = ad.Company
