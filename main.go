@@ -43,10 +43,8 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Warn("failed to fetch campaigns ", err)
 		} else if camps != nil {
-			index := rand.Intn(campaignsCount)
-			if index < len(camps) {
-				res = []interface{}{camps[index]}
-			}
+			index := rand.Intn(len(camps))
+			res = []interface{}{camps[index]}
 		}
 	}
 
