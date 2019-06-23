@@ -1,0 +1,114 @@
+version: 2.1
+orbs:
+  gcp-gcr: circleci/gcp-gcr@0.6.0
+  helm: circleci/helm@0.1.2
+  gcp-cli: circleci/gcp-cli@1.8.1
+
+jobs:
+  build:
+    docker:
+      - image: circleci/go:1.11
+      - image: mysql:5.7
+        environment:
+          MYSQL_DATABASE: test
+          MYSQL_ROOT_PASSWORD: 12345
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "Gopkg.lock" }}
+      - run:
+          name: Install dependencies
+          command: go install .
+          environment:
+            PROJECT_ROOT: $CIRCLE_PROJECT_REPONAME
+      - save_cache:
+          key: dependency-cache-{{ checksum "Gopkg.lock" }}
+          paths:
+            - ./vendor
+      - run:
+          name: Wait for MySQL
+          command: |
+            for i in `seq 1 10`;
+            do
+            nc -z localhost 3306 && echo Success && exit 0
+            echo -n .
+            sleep 1
+            done
+            echo Failed waiting for Postgress && exit 1
+      - run:
+          name: Test
+          command: go test
+          environment:
+            PROJECT_ROOT: $CIRCLE_PROJECT_REPONAME
+            GCLOUD_PROJECT: daily-ops
+            CODEFUND_API_KEY: ''
+            DB_CONNECTION_STRING: root:12345@(mysql:3306)/test
+            CAMPAIGNS_COUNT: 1
+      - run:
+          name: Build
+          command: go build -a -installsuffix cgo -o main
+          environment:
+            PROJECT_ROOT: $CIRCLE_PROJECT_REPONAME
+            CGO_ENABLED: 0
+            GOOS: linux
+      - persist_to_workspace:
+          root: .
+          paths:
+            - main
+  build_and_push_docker:
+    machine: true
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - gcp-gcr/build-image:
+          image: $CIRCLE_PROJECT_REPONAME
+          tag: $CIRCLE_SHA1
+      - gcp-gcr/gcr-auth
+      - gcp-gcr/push-image:
+          image: $CIRCLE_PROJECT_REPONAME
+          tag: $CIRCLE_SHA1
+  deploy_helm:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - checkout
+      - gcp-cli/initialize
+      - run:
+          name: Decrypt variables
+          command: gcloud kms decrypt --ciphertext-file=./helm/values/prod.yaml.enc --plaintext-file=./helm/values/prod.yaml --location=global --keyring=daily-ci --key=daily-monetization-ci --project daily-ops
+      - run:
+          name: Get cluster credentials
+          command: gcloud container clusters get-credentials prod
+      - helm/install-helm-client:
+          version: v2.9.1
+      - run:
+          name: Update Helm release
+          command: helm upgrade $CIRCLE_PROJECT_REPONAME ./helm/$CIRCLE_PROJECT_REPONAME --namespace daily -f ./helm/values/prod.yaml --set-string image.tag=$CIRCLE_SHA1 -i
+workflows:
+  build:
+    jobs:
+      - build
+      - build_and_push_docker:
+          requires:
+            - build
+          context: GCR
+      - deploy_helm:
+          requires:
+            - build_and_push_docker
+          context: PROD
+          filters:
+            branches:
+              only:
+                - master
+      - gcp-gcr/add-image-tag:
+          requires:
+            - build_and_push_docker
+          context: GCR
+          image: $CIRCLE_PROJECT_REPONAME
+          source-tag: $CIRCLE_SHA1
+          target-tag: latest
+          filters:
+            branches:
+              only:
+                - master
