@@ -37,11 +37,15 @@ jobs:
             done
             echo Failed waiting for Postgress && exit 1
       - run:
+          name: Create service account
+          command: echo $GCLOUD_SERVICE_KEY > key.json
+      - run:
           name: Test
           command: go test
           environment:
             PROJECT_ROOT: $CIRCLE_PROJECT_REPONAME
             GCLOUD_PROJECT: daily-ops
+            GOOGLE_APPLICATION_CREDENTIALS: ./key.json
             CODEFUND_API_KEY: ''
             DB_CONNECTION_STRING: root:12345@(mysql:3306)/test
             CAMPAIGNS_COUNT: 1
