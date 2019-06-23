@@ -12,6 +12,7 @@ jobs:
         environment:
           MYSQL_DATABASE: test
           MYSQL_ROOT_PASSWORD: 12345
+    working_directory: /go/src/github.com/dailynowco/daily-monetization
     steps:
       - checkout
       - restore_cache:
