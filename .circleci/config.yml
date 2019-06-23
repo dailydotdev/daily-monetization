@@ -7,7 +7,7 @@ orbs:
 jobs:
   build:
     docker:
-      - image: circleci/go:1.11
+      - image: circleci/golang:1.11
       - image: mysql:5.7
         environment:
           MYSQL_DATABASE: test
