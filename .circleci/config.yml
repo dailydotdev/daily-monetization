@@ -47,7 +47,7 @@ jobs:
             GCLOUD_PROJECT: daily-ops
             GOOGLE_APPLICATION_CREDENTIALS: ./key.json
             CODEFUND_API_KEY: ''
-            DB_CONNECTION_STRING: root:12345@(mysql:3306)/test
+            DB_CONNECTION_STRING: root:12345@(localhost:3306)/test
             CAMPAIGNS_COUNT: 1
       - run:
           name: Build
