@@ -71,6 +71,11 @@ spec:
               secretKeyRef:
                 name: {{ template "daily-monetization.fullname" . }}
                 key: CODEFUND_API_KEY
+          - name: CODEFUND_REFERRAL_LINK
+            valueFrom:
+              secretKeyRef:
+                name: {{ template "daily-monetization.fullname" . }}
+                key: CODEFUND_REFERRAL_LINK
           volumeMounts:
           - name: config
             mountPath: "/etc/config"

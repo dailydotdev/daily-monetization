@@ -46,4 +46,5 @@ appConfig: {}
 #  dbConnectionString: ''
 #  migrationsSource: ''
 #  codefundApiKey: ''
+#  codefundReferralLink: ''
 #  serviceAccount: ''
