@@ -10,4 +10,5 @@ metadata:
 data:
   CAMPAIGNS_COUNT: {{ .Values.appConfig.campaignsCount | quote }}
   GCLOUD_PROJECT: {{ .Values.appConfig.gcloudProject }}
+  CODEFUND_REFERRAL_LINK: {{ .Values.appConfig.codefundReferralLink }}
 

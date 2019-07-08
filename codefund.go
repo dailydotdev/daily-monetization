@@ -10,7 +10,8 @@ import (
 
 type CodefundAd struct {
 	Ad
-	Pixel []string
+	Pixel        []string
+	ReferralLink string
 }
 
 type CodefundImage struct {
@@ -36,6 +37,7 @@ type CodefundResponse struct {
 
 var hystrixCf = "Codefund"
 var cfApiKey = os.Getenv("CODEFUND_API_KEY")
+var referralLink = getEnv("CODEFUND_REFERRAL_LINK", "")
 
 var fetchCodefund = func(r *http.Request, propertyId string) (*CodefundAd, error) {
 	var res CodefundResponse
@@ -64,6 +66,7 @@ var fetchCodefund = func(r *http.Request, propertyId string) (*CodefundAd, error
 	ad.Description = res.Headline + " " + res.Description
 	ad.Link = res.Link
 	ad.Source = ad.Company
+	ad.ReferralLink = referralLink
 
 	for _, image := range res.Images {
 		if image.SizeDescriptor == "wide" {
