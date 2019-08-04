@@ -73,7 +73,7 @@ spec:
                 key: CODEFUND_API_KEY
           - name: CODEFUND_REFERRAL_LINK
             valueFrom:
-              secretKeyRef:
+              configMapKeyRef:
                 name: {{ template "daily-monetization.fullname" . }}
                 key: CODEFUND_REFERRAL_LINK
           volumeMounts:
