@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/golang-migrate/migrate"
+	"github.com/golang-migrate/migrate/database/mysql"
 	_ "github.com/golang-migrate/migrate/database/mysql"
 	_ "github.com/golang-migrate/migrate/source/file"
 	_ "github.com/golang-migrate/migrate/source/github"
@@ -18,10 +19,19 @@ var hystrixDb = "db"
 var campStmt *sql.Stmt
 var addCampStmt *sql.Stmt
 
+func openDatabaseConnection() (*sql.DB, error) {
+	return sql.Open("mysql", dbConnString+"?charset=utf8mb4,utf8")
+}
+
 func newMigrate() (*migrate.Migrate, error) {
-	return migrate.New(
+	con, err := openDatabaseConnection()
+	if err != nil {
+		log.Fatal("failed to open sql ", err)
+	}
+	driver, _ := mysql.WithInstance(con, &mysql.Config{})
+	return migrate.NewWithDatabaseInstance(
 		getEnv("MIGRATIONS_SOURCE", "file://migrations"),
-		"mysql://"+dbConnString)
+		"mysql", driver)
 }
 
 func migrateDatabase() {
@@ -54,7 +64,7 @@ func dropDatabase() {
 
 func initializeDatabase() {
 	var err error
-	db, err = sql.Open("mysql", dbConnString+"?charset=utf8mb4,utf8")
+	db, err = openDatabaseConnection()
 	if err != nil {
 		log.Fatal("failed to open sql ", err)
 	}
