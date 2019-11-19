@@ -181,8 +181,8 @@ func createApp() *App {
 
 func init() {
 	hystrix.ConfigureCommand(hystrixDb, hystrix.CommandConfig{Timeout: 300})
-	hystrix.ConfigureCommand(hystrixCf, hystrix.CommandConfig{Timeout: 1000})
-	hystrix.ConfigureCommand(hystrixBsa, hystrix.CommandConfig{Timeout: 1000})
+	hystrix.ConfigureCommand(hystrixCf, hystrix.CommandConfig{Timeout: 500})
+	hystrix.ConfigureCommand(hystrixBsa, hystrix.CommandConfig{Timeout: 500})
 
 	if file, ok := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS"); ok {
 		gcpOpts = append(gcpOpts, option.WithCredentialsFile(file))
