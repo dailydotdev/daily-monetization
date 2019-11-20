@@ -25,7 +25,7 @@ func sendBsaRequest(r *http.Request) (BsaResponse, error) {
 	req, _ := http.NewRequest("GET", "https://srv.buysellads.com/ads/CKYI623Y.json?segment=placement:dailynowco&forwardedip="+ip, nil)
 	req = req.WithContext(r.Context())
 
-	err := getJsonHystrix(hystrixBsa, req, &res)
+	err := getJsonHystrix(hystrixBsa, req, &res, false)
 	if err != nil {
 		return BsaResponse{}, err
 	}

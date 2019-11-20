@@ -51,13 +51,13 @@ var fetchCodefund = func(r *http.Request, propertyId string) (*CodefundAd, error
 	req.Header.Set("User-Agent", r.UserAgent())
 	req.Header.Set("X-CodeFund-API-Key", cfApiKey)
 	req = req.WithContext(r.Context())
-	err = getJsonHystrix(hystrixCf, req, &res)
+	err = getJsonHystrix(hystrixCf, req, &res, true)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if len(res.Reason) > 0 {
+	if len(res.Reason) > 0 || res.Link == "" {
 		return nil, nil
 	}
 

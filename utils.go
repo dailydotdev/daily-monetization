@@ -37,10 +37,14 @@ func getJson(req *http.Request, target interface{}) error {
 	}
 }
 
-func getJsonHystrix(breakerName string, req *http.Request, target interface{}) error {
+func getJsonHystrix(breakerName string, req *http.Request, target interface{}, ignoreNotFound bool) error {
 	return hystrix.Do(breakerName,
 		func() error {
-			return getJson(req, target)
+			err := getJson(req, target)
+			if ignoreNotFound && err != nil && err.Error() == "404" {
+				return nil
+			}
+			return err
 		}, nil)
 }
 
