@@ -19,6 +19,8 @@ type CampaignAd struct {
 	Id          string
 	Placeholder string
 	Ratio       float32
+	Probability float32
+	Fallback    bool
 }
 
 type ScheduledCampaignAd struct {
@@ -30,7 +32,7 @@ type ScheduledCampaignAd struct {
 var addCampaign = func(ctx context.Context, camp ScheduledCampaignAd) error {
 	return hystrix.DoC(ctx, hystrixDb,
 		func(ctx context.Context) error {
-			_, err := addCampStmt.ExecContext(ctx, camp.Id, camp.Description, camp.Link, camp.Image, camp.Ratio, camp.Placeholder, camp.Source, camp.Start, camp.End)
+			_, err := addCampStmt.ExecContext(ctx, camp.Id, camp.Description, camp.Link, camp.Image, camp.Ratio, camp.Placeholder, camp.Source, camp.Company, camp.Probability, camp.Fallback, camp.Start, camp.End)
 			if err != nil {
 				return err
 			}
@@ -52,11 +54,10 @@ var fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignA
 			var res []CampaignAd
 			for rows.Next() {
 				var camp CampaignAd
-				err := rows.Scan(&camp.Id, &camp.Description, &camp.Link, &camp.Image, &camp.Ratio, &camp.Placeholder, &camp.Source)
+				err := rows.Scan(&camp.Id, &camp.Description, &camp.Link, &camp.Image, &camp.Ratio, &camp.Placeholder, &camp.Source, &camp.Company, &camp.Probability, &camp.Fallback)
 				if err != nil {
 					return err
 				}
-				camp.Company = camp.Source
 				res = append(res, camp)
 			}
 			err = rows.Err()

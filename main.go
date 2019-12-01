@@ -23,11 +23,30 @@ var campaignsCount, _ = strconv.Atoi(os.Getenv("CAMPAIGNS_COUNT"))
 func ServeAd(w http.ResponseWriter, r *http.Request) {
 	var res []interface{}
 
-	cf, err := fetchCodefund(r, "a4ace977-6531-4708-a4d9-413c8910ac2c")
+	camps, err := fetchCampaigns(r.Context(), time.Now())
 	if err != nil {
-		log.Warn("failed to fetch ad from Codefund ", err)
-	} else if cf != nil {
-		res = []interface{}{*cf}
+		log.Warn("failed to fetch campaigns ", err)
+	}
+
+	// Look for a campaign ad based on probability
+	prob := rand.Float32()
+	for i := 0; i < len(camps); i++ {
+		if !camps[i].Fallback {
+			if prob <= camps[i].Probability {
+				res = []interface{}{camps[i]}
+				break
+			}
+			prob -= camps[i].Probability
+		}
+	}
+
+	if res == nil {
+		cf, err := fetchCodefund(r, "a4ace977-6531-4708-a4d9-413c8910ac2c")
+		if err != nil {
+			log.Warn("failed to fetch ad from Codefund ", err)
+		} else if cf != nil {
+			res = []interface{}{*cf}
+		}
 	}
 
 	if res == nil {
@@ -39,12 +58,16 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	if res == nil {
-		camps, err := fetchCampaigns(r.Context(), time.Now())
-		if err != nil {
-			log.Warn("failed to fetch campaigns ", err)
-		} else if camps != nil {
-			index := rand.Intn(len(camps))
-			res = []interface{}{camps[index]}
+		// Look for a fallback campaign ad based on probability
+		prob := rand.Float32()
+		for i := 0; i < len(camps); i++ {
+			if camps[i].Fallback {
+				if prob <= camps[i].Probability {
+					res = []interface{}{camps[i]}
+					break
+				}
+				prob -= camps[i].Probability
+			}
 		}
 	}
 

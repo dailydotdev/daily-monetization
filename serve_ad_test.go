@@ -31,13 +31,15 @@ var bsaNotAvailable = func(r *http.Request) (*BsaAd, error) {
 	return nil, nil
 }
 
-func TestCampaignAvailable(t *testing.T) {
+func TestFallbackCampaignAvailable(t *testing.T) {
 	exp := []CampaignAd{
 		{
 			Ad:          ad,
 			Placeholder: "placholder",
 			Ratio:       0.5,
 			Id:          "id",
+			Fallback:    true,
+			Probability: 1,
 		},
 	}
 
@@ -62,7 +64,7 @@ func TestCampaignAvailable(t *testing.T) {
 	assert.Equal(t, exp, actual, "wrong body")
 }
 
-func TestCampaignNotAvailable(t *testing.T) {
+func TestFallbackCampaignNotAvailable(t *testing.T) {
 	fetchCodefund = codefundNotAvailable
 	fetchBsa = bsaNotAvailable
 	fetchCampaigns = campaignNotAvailable
@@ -105,6 +107,68 @@ func TestCampaignFail(t *testing.T) {
 	assert.Equal(t, []interface{}{}, actual, "wrong body")
 }
 
+func TestCampaignAvailable(t *testing.T) {
+	exp := []CampaignAd{
+		{
+			Ad:          ad,
+			Placeholder: "placholder",
+			Ratio:       0.5,
+			Id:          "id",
+			Fallback:    false,
+			Probability: 1,
+		},
+	}
+
+	fetchCodefund = codefundNotAvailable
+	fetchBsa = bsaNotAvailable
+	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
+		return exp, nil
+	}
+
+	req, err := http.NewRequest("GET", "/a", nil)
+	assert.Nil(t, err)
+
+	rr := httptest.NewRecorder()
+
+	router := createApp()
+	router.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
+
+	var actual []CampaignAd
+	json.NewDecoder(rr.Body).Decode(&actual)
+	assert.Equal(t, exp, actual, "wrong body")
+}
+
+func TestCodefundAvailable(t *testing.T) {
+	exp := []CodefundAd{
+		{
+			Ad:           ad,
+			Pixel:        []string{"pixel"},
+			ReferralLink: "https://referral.com",
+		},
+	}
+
+	fetchCampaigns = campaignNotAvailable
+	fetchCodefund = func(r *http.Request, propertyId string) (*CodefundAd, error) {
+		return &exp[0], nil
+	}
+
+	req, err := http.NewRequest("GET", "/a", nil)
+	assert.Nil(t, err)
+
+	rr := httptest.NewRecorder()
+
+	router := createApp()
+	router.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
+
+	var actual []CodefundAd
+	json.NewDecoder(rr.Body).Decode(&actual)
+	assert.Equal(t, exp, actual, "wrong body")
+}
+
 func TestCodefundNotAvailable(t *testing.T) {
 	exp := []BsaAd{
 		{
@@ -143,6 +207,7 @@ func TestCodefundFail(t *testing.T) {
 		},
 	}
 
+	fetchCampaigns = campaignNotAvailable
 	fetchCodefund = func(r *http.Request, propertyId string) (*CodefundAd, error) {
 		return nil, errors.New("error")
 	}
@@ -165,45 +230,15 @@ func TestCodefundFail(t *testing.T) {
 	assert.Equal(t, exp, actual, "wrong body")
 }
 
-func TestBsaNotAvailable(t *testing.T) {
+func TestBsaFail(t *testing.T) {
 	exp := []CampaignAd{
 		{
 			Ad:          ad,
 			Placeholder: "placholder",
 			Ratio:       0.5,
 			Id:          "id",
-		},
-	}
-
-	fetchCodefund = codefundNotAvailable
-	fetchBsa = bsaNotAvailable
-
-	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
-		return exp, nil
-	}
-
-	req, err := http.NewRequest("GET", "/a", nil)
-	assert.Nil(t, err)
-
-	rr := httptest.NewRecorder()
-
-	router := createApp()
-	router.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
-
-	var actual []CampaignAd
-	json.NewDecoder(rr.Body).Decode(&actual)
-	assert.Equal(t, exp, actual, "wrong body")
-}
-
-func TestBsaNotFail(t *testing.T) {
-	exp := []CampaignAd{
-		{
-			Ad:          ad,
-			Placeholder: "placholder",
-			Ratio:       0.5,
-			Id:          "id",
+			Fallback:    true,
+			Probability: 1,
 		},
 	}
 
