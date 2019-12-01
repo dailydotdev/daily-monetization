@@ -11,12 +11,14 @@ var camp = CampaignAd{
 	Placeholder: "placholder",
 	Ratio:       0.5,
 	Id:          "id",
+	Probability: 1,
+	Fallback:    true,
 	Ad: Ad{
 		Source:      "source",
 		Image:       "image",
 		Link:        "http://link.com",
 		Description: "desc",
-		Company:     "source",
+		Company:     "company",
 	},
 }
 
