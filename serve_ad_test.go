@@ -172,9 +172,9 @@ func TestCodefundAvailable(t *testing.T) {
 func TestCodefundNotAvailable(t *testing.T) {
 	exp := []BsaAd{
 		{
-			Ad:              ad,
-			Pixel:           []string{"pixel"},
-			BackgroundColor: "#ffffff",
+			Ad:           ad,
+			Pixel:        []string{"pixel"},
+			ReferralLink: "https://referral.com",
 		},
 	}
 
@@ -201,9 +201,9 @@ func TestCodefundNotAvailable(t *testing.T) {
 func TestCodefundFail(t *testing.T) {
 	exp := []BsaAd{
 		{
-			Ad:              ad,
-			Pixel:           []string{"pixel"},
-			BackgroundColor: "#ffffff",
+			Ad:           ad,
+			Pixel:        []string{"pixel"},
+			ReferralLink: "https://referral.com",
 		},
 	}
 
