@@ -39,9 +39,9 @@ func TestToiletCodefundAvailable(t *testing.T) {
 func TestToiletCodefundFail(t *testing.T) {
 	exp := []BsaAd{
 		{
-			Ad:              ad,
-			Pixel:           []string{"pixel"},
-			BackgroundColor: "#ffffff",
+			Ad:           ad,
+			Pixel:        []string{"pixel"},
+			ReferralLink: "https://referral.com",
 		},
 	}
 
