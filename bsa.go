@@ -8,8 +8,8 @@ import (
 
 type BsaAd struct {
 	Ad
-	Pixel           []string
-	BackgroundColor string
+	Pixel        []string
+	ReferralLink string
 }
 
 type BsaResponse struct {
@@ -22,7 +22,7 @@ func sendBsaRequest(r *http.Request) (BsaResponse, error) {
 	var res BsaResponse
 	ip := getIpAddress(r)
 	//ip = "208.98.185.89"
-	req, _ := http.NewRequest("GET", "https://srv.buysellads.com/ads/CKYI623Y.json?segment=placement:dailynowco&forwardedip="+ip, nil)
+	req, _ := http.NewRequest("GET", "https://srv.buysellads.com/ads/CK7DT2QM.json?segment=placement:dailynowco&forwardedip="+ip, nil)
 	req = req.WithContext(r.Context())
 
 	err := getJsonHystrix(hystrixBsa, req, &res, false)
@@ -43,13 +43,13 @@ var fetchBsa = func(r *http.Request) (*BsaAd, error) {
 	for _, ad := range ads {
 		if _, ok := ad["statlink"]; ok {
 			retAd := BsaAd{}
-			retAd.Company, _ = ad["company"].(string)
-			retAd.Description, _ = ad["description"].(string)
-			retAd.Image, _ = ad["logo"].(string)
+			retAd.Description, _ = ad["title"].(string)
+			retAd.Image, _ = ad["smallImage"].(string)
 			retAd.Link, _ = ad["statlink"].(string)
 			retAd.Link = fmt.Sprintf("https:%s", retAd.Link)
-			retAd.BackgroundColor, _ = ad["backgroundColor"].(string)
-			retAd.Source = "BSA"
+			retAd.ReferralLink, _ = ad["ad_via_link"].(string)
+			retAd.Source = "Carbon"
+			retAd.Company = retAd.Source
 			if pixel, ok := ad["pixel"].(string); ok {
 				retAd.Pixel = strings.Split(pixel, "||")
 				for index := range retAd.Pixel {
