@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
-	"strings"
 )
 
 type CodefundAd struct {
@@ -15,8 +14,8 @@ type CodefundAd struct {
 }
 
 type CodefundImage struct {
-	SizeDescriptor string `json:"size_descriptor"`
-	Url            string
+	Format string
+	Url    string
 }
 
 type CodefundRequest struct {
@@ -25,14 +24,12 @@ type CodefundRequest struct {
 }
 
 type CodefundResponse struct {
-	HouseAd       bool `json:"house_ad"`
-	Link          string
+	CampaignUrl   string
 	Headline      string
-	Description   string
-	LargeImageUrl string `json:"large_image_url"`
-	Pixel         string
+	Body          string
+	ImpressionUrl string
 	Images        []CodefundImage
-	Reason        string
+	Fallback      bool
 }
 
 var hystrixCf = "Codefund"
@@ -46,7 +43,7 @@ var fetchCodefund = func(r *http.Request, propertyId string) (*CodefundAd, error
 	if err != nil {
 		return nil, err
 	}
-	req, _ := http.NewRequest("POST", "https://codefund.io/api/v1/impression/"+propertyId, bytes.NewBuffer(body))
+	req, _ := http.NewRequest("GET", "https://app.codefund.io/properties/"+propertyId+"/funder.json", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("User-Agent", r.UserAgent())
 	req.Header.Set("X-CodeFund-API-Key", cfApiKey)
@@ -57,31 +54,31 @@ var fetchCodefund = func(r *http.Request, propertyId string) (*CodefundAd, error
 		return nil, err
 	}
 
-	if len(res.Reason) > 0 || res.Link == "" {
+	if res.Fallback || res.CampaignUrl == "" {
 		return nil, nil
 	}
 
 	ad := CodefundAd{}
 	ad.Company = "CodeFund"
-	ad.Description = res.Headline + " " + res.Description
-	ad.Link = res.Link
+	ad.Description = res.Headline + " " + res.Body
+	ad.Link = res.CampaignUrl
 	ad.Source = ad.Company
 	ad.ReferralLink = referralLink
+	ad.Pixel = []string{res.ImpressionUrl}
 
 	for _, image := range res.Images {
-		if image.SizeDescriptor == "wide" {
+		if image.Format == "wide" {
 			ad.Image = image.Url
 			break
 		}
 	}
 	if len(ad.Image) == 0 {
-		ad.Image = res.LargeImageUrl
-	}
-
-	if strings.HasPrefix(res.Pixel, "//") {
-		ad.Pixel = []string{"https:" + res.Pixel}
-	} else {
-		ad.Pixel = []string{res.Pixel}
+		for _, image := range res.Images {
+			if image.Format == "large" {
+				ad.Image = image.Url
+				break
+			}
+		}
 	}
 
 	return &ad, nil
