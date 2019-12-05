@@ -161,6 +161,14 @@
   version = "v2.0.0"
 
 [[projects]]
+  digest = "1:523a9001344a82cd6366265b300f8d81888cd1ca9cc5795a479918c1e16a11e1"
+  name = "github.com/ip2location/ip2location-go"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "686e11c9cb7075d52ce41bfd1e81e4ad6d0a0120"
+  version = "v8.2.0"
+
+[[projects]]
   digest = "1:e22af8c7518e1eab6f2eab2b7d7558927f816262586cd6ed9f349c97a6c285c4"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
@@ -428,6 +436,7 @@
     "github.com/golang-migrate/migrate/database/mysql",
     "github.com/golang-migrate/migrate/source/file",
     "github.com/golang-migrate/migrate/source/github",
+    "github.com/ip2location/ip2location-go",
     "github.com/sirupsen/logrus",
     "github.com/stretchr/testify/assert",
     "go.opencensus.io/plugin/ochttp",

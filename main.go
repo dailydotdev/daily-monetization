@@ -13,15 +13,16 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"strconv"
 	"time"
 )
 
 var gcpOpts []option.ClientOption
-var campaignsCount, _ = strconv.Atoi(os.Getenv("CAMPAIGNS_COUNT"))
 
 func ServeAd(w http.ResponseWriter, r *http.Request) {
 	var res []interface{}
+
+	ip := getIpAddress(r)
+	country := getCountryByIP(ip)
 
 	camps, err := fetchCampaigns(r.Context(), time.Now())
 	if err != nil {
@@ -50,7 +51,13 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if res == nil {
-		bsa, err := fetchBsa(r)
+		var bsa *BsaAd
+		var err error
+		if country == "US" {
+			bsa, err = fetchBsa(r, "CE7D5KJL")
+		} else {
+			bsa, err = fetchBsa(r, "CK7DT2QM")
+		}
 		if err != nil {
 			log.Warn("failed to fetch ad from BSA ", err)
 		} else if bsa != nil {
@@ -98,7 +105,7 @@ func ServeToilet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if res == nil {
-		bsa, err := fetchBsa(r)
+		bsa, err := fetchBsa(r, "CK7DT2QM")
 		if err != nil {
 			log.Warn("failed to fetch ad from BSA ", err)
 		} else if bsa != nil {
@@ -123,7 +130,7 @@ func ServeToilet(w http.ResponseWriter, r *http.Request) {
 }
 
 func ServeBsa(w http.ResponseWriter, r *http.Request) {
-	res, err := sendBsaRequest(r)
+	res, err := sendBsaRequest(r, "CK7DT2QM")
 	if err != nil {
 		log.Warn("failed to fetch ad from BSA ", err)
 		http.Error(w, "Server Internal Error", http.StatusInternalServerError)
@@ -242,8 +249,10 @@ func init() {
 }
 
 func main() {
-	migrateDatabase()
+	openGeolocationDatabase()
+	defer closeGeolocationDatabase()
 
+	migrateDatabase()
 	initializeDatabase()
 	defer tearDatabase()
 

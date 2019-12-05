@@ -27,7 +27,7 @@ var codefundNotAvailable = func(r *http.Request, propertyId string) (*CodefundAd
 	return nil, nil
 }
 
-var bsaNotAvailable = func(r *http.Request) (*BsaAd, error) {
+var bsaNotAvailable = func(r *http.Request, propertyId string) (*BsaAd, error) {
 	return nil, nil
 }
 
@@ -179,7 +179,7 @@ func TestCodefundNotAvailable(t *testing.T) {
 	}
 
 	fetchCodefund = codefundNotAvailable
-	fetchBsa = func(r *http.Request) (*BsaAd, error) {
+	fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
 		return &exp[0], nil
 	}
 
@@ -211,7 +211,7 @@ func TestCodefundFail(t *testing.T) {
 	fetchCodefund = func(r *http.Request, propertyId string) (*CodefundAd, error) {
 		return nil, errors.New("error")
 	}
-	fetchBsa = func(r *http.Request) (*BsaAd, error) {
+	fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
 		return &exp[0], nil
 	}
 
@@ -243,7 +243,7 @@ func TestBsaFail(t *testing.T) {
 	}
 
 	fetchCodefund = codefundNotAvailable
-	fetchBsa = func(r *http.Request) (*BsaAd, error) {
+	fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
 		return nil, errors.New("error")
 	}
 
