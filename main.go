@@ -24,8 +24,6 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	ip := getIpAddress(r)
 	country := getCountryByIP(ip)
 
-	log.Info("serving ads to " + country)
-
 	camps, err := fetchCampaigns(r.Context(), time.Now())
 	if err != nil {
 		log.Warn("failed to fetch campaigns ", err)
