@@ -6,5 +6,6 @@ RUN apk update && \
 
 EXPOSE 9090
 
+ADD ip2location /
 ADD main /
 CMD ["/main"]

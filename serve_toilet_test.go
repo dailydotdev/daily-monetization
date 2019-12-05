@@ -48,7 +48,7 @@ func TestToiletCodefundFail(t *testing.T) {
 	fetchCodefund = func(r *http.Request, propertyId string) (*CodefundAd, error) {
 		return nil, errors.New("error")
 	}
-	fetchBsa = func(r *http.Request) (*BsaAd, error) {
+	fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
 		return &exp[0], nil
 	}
 
@@ -88,7 +88,7 @@ func TestToiletBsaNotAvailable(t *testing.T) {
 
 func TestToiletBsaNotFail(t *testing.T) {
 	fetchCodefund = codefundNotAvailable
-	fetchBsa = func(r *http.Request) (*BsaAd, error) {
+	fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
 		return nil, errors.New("error")
 	}
 

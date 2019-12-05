@@ -18,11 +18,11 @@ type BsaResponse struct {
 
 var hystrixBsa = "BSA"
 
-func sendBsaRequest(r *http.Request) (BsaResponse, error) {
+func sendBsaRequest(r *http.Request, propertyId string) (BsaResponse, error) {
 	var res BsaResponse
 	ip := getIpAddress(r)
 	//ip = "208.98.185.89"
-	req, _ := http.NewRequest("GET", "https://srv.buysellads.com/ads/CK7DT2QM.json?segment=placement:dailynowco&forwardedip="+ip, nil)
+	req, _ := http.NewRequest("GET", "https://srv.buysellads.com/ads/"+propertyId+".json?segment=placement:dailynowco&forwardedip="+ip, nil)
 	req = req.WithContext(r.Context())
 
 	err := getJsonHystrix(hystrixBsa, req, &res, false)
@@ -33,8 +33,8 @@ func sendBsaRequest(r *http.Request) (BsaResponse, error) {
 	return res, nil
 }
 
-var fetchBsa = func(r *http.Request) (*BsaAd, error) {
-	res, err := sendBsaRequest(r)
+var fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
+	res, err := sendBsaRequest(r, propertyId)
 	if err != nil {
 		return nil, err
 	}
