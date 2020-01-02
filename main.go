@@ -13,6 +13,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -32,7 +33,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	// Look for a campaign ad based on probability
 	prob := rand.Float32()
 	for i := 0; i < len(camps); i++ {
-		if !camps[i].Fallback {
+		if !camps[i].Fallback && (len(camps[i].Geo) == 0 || strings.Contains(camps[i].Geo, country)) {
 			if prob <= camps[i].Probability {
 				res = []interface{}{camps[i]}
 				break
@@ -53,7 +54,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	if res == nil {
 		var bsa *BsaAd
 		var err error
-		if country == "US" {
+		if country == "united states" {
 			bsa, err = fetchBsa(r, "CE7D5KJL")
 		} else {
 			bsa, err = fetchBsa(r, "CK7DT2QM")
@@ -68,7 +69,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		// Look for a fallback campaign ad based on probability
 		prob := rand.Float32()
 		for i := 0; i < len(camps); i++ {
-			if camps[i].Fallback {
+			if camps[i].Fallback && (len(camps[i].Geo) == 0 || strings.Contains(country, camps[i].Geo)) {
 				if prob <= camps[i].Probability {
 					res = []interface{}{camps[i]}
 					break
