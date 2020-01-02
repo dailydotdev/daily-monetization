@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"github.com/afex/hystrix-go/hystrix"
 	"time"
 )
@@ -55,9 +56,15 @@ var fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignA
 			var res []CampaignAd
 			for rows.Next() {
 				var camp CampaignAd
-				err := rows.Scan(&camp.Id, &camp.Description, &camp.Link, &camp.Image, &camp.Ratio, &camp.Placeholder, &camp.Source, &camp.Company, &camp.Probability, &camp.Fallback, &camp.Geo)
+				var geo sql.NullString
+				err := rows.Scan(&camp.Id, &camp.Description, &camp.Link, &camp.Image, &camp.Ratio, &camp.Placeholder, &camp.Source, &camp.Company, &camp.Probability, &camp.Fallback, &geo)
 				if err != nil {
 					return err
+				}
+				if geo.Valid {
+					camp.Geo = geo.String
+				} else {
+					camp.Geo = ""
 				}
 				res = append(res, camp)
 			}
