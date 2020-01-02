@@ -140,6 +140,43 @@ func TestCampaignAvailable(t *testing.T) {
 	assert.Equal(t, exp, actual, "wrong body")
 }
 
+func TestCampaignAvailableByGeo(t *testing.T) {
+	exp := []CampaignAd{
+		{
+			Ad:          ad,
+			Placeholder: "placholder",
+			Ratio:       0.5,
+			Id:          "id",
+			Fallback:    false,
+			Probability: 1,
+			Geo:         "united states,israel,germany",
+		},
+	}
+
+	getCountryByIP = func(ip string) string {
+		return "united states"
+	}
+	fetchCodefund = codefundNotAvailable
+	fetchBsa = bsaNotAvailable
+	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
+		return exp, nil
+	}
+
+	req, err := http.NewRequest("GET", "/a", nil)
+	assert.Nil(t, err)
+
+	rr := httptest.NewRecorder()
+
+	router := createApp()
+	router.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
+
+	var actual []CampaignAd
+	json.NewDecoder(rr.Body).Decode(&actual)
+	assert.Equal(t, exp, actual, "wrong body")
+}
+
 func TestCodefundAvailable(t *testing.T) {
 	exp := []CodefundAd{
 		{
