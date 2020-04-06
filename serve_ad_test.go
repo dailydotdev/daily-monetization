@@ -187,6 +187,7 @@ func TestCodefundAvailable(t *testing.T) {
 	}
 
 	fetchCampaigns = campaignNotAvailable
+	fetchBsa = bsaNotAvailable
 	fetchCodefund = func(r *http.Request, propertyId string) (*CodefundAd, error) {
 		return &exp[0], nil
 	}
@@ -206,7 +207,7 @@ func TestCodefundAvailable(t *testing.T) {
 	assert.Equal(t, exp, actual, "wrong body")
 }
 
-func TestCodefundNotAvailable(t *testing.T) {
+func TestCodefundFail(t *testing.T) {
 	exp := []BsaAd{
 		{
 			Ad:           ad,
@@ -215,7 +216,11 @@ func TestCodefundNotAvailable(t *testing.T) {
 		},
 	}
 
-	fetchCodefund = codefundNotAvailable
+	fetchCampaigns = campaignNotAvailable
+	fetchBsa = bsaNotAvailable
+	fetchCodefund = func(r *http.Request, propertyId string) (*CodefundAd, error) {
+		return nil, errors.New("error")
+	}
 	fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
 		return &exp[0], nil
 	}
@@ -235,7 +240,7 @@ func TestCodefundNotAvailable(t *testing.T) {
 	assert.Equal(t, exp, actual, "wrong body")
 }
 
-func TestCodefundFail(t *testing.T) {
+func TestBsaAvailable(t *testing.T) {
 	exp := []BsaAd{
 		{
 			Ad:           ad,
@@ -244,10 +249,7 @@ func TestCodefundFail(t *testing.T) {
 		},
 	}
 
-	fetchCampaigns = campaignNotAvailable
-	fetchCodefund = func(r *http.Request, propertyId string) (*CodefundAd, error) {
-		return nil, errors.New("error")
-	}
+	fetchCodefund = codefundNotAvailable
 	fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
 		return &exp[0], nil
 	}

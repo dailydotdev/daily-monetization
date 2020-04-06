@@ -43,15 +43,6 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if res == nil {
-		cf, err := fetchCodefund(r, "a4ace977-6531-4708-a4d9-413c8910ac2c")
-		if err != nil {
-			log.Warn("failed to fetch ad from Codefund ", err)
-		} else if cf != nil {
-			res = []interface{}{*cf}
-		}
-	}
-
-	if res == nil {
 		var bsa *BsaAd
 		var err error
 		if country == "united states" {
@@ -65,6 +56,16 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 			res = []interface{}{*bsa}
 		}
 	}
+
+	if res == nil {
+		cf, err := fetchCodefund(r, "a4ace977-6531-4708-a4d9-413c8910ac2c")
+		if err != nil {
+			log.Warn("failed to fetch ad from Codefund ", err)
+		} else if cf != nil {
+			res = []interface{}{*cf}
+		}
+	}
+
 	if res == nil {
 		// Look for a fallback campaign ad based on probability
 		prob := rand.Float32()
