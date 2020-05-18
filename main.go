@@ -58,7 +58,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if res == nil {
-		cf, err := fetchCodefund(r, "a4ace977-6531-4708-a4d9-413c8910ac2c")
+		cf, err := fetchCodefund(r, "114")
 		if err != nil {
 			log.Warn("failed to fetch ad from Codefund ", err)
 		} else if cf != nil {
@@ -99,7 +99,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 func ServeToilet(w http.ResponseWriter, r *http.Request) {
 	var res []interface{}
 
-	cf, err := fetchCodefund(r, "89dc8cbd-475f-4941-bfa8-03e509b8f897")
+	cf, err := fetchCodefund(r, "114")
 	if err != nil {
 		log.Warn("failed to fetch ad from Codefund ", err)
 	} else if cf != nil {
