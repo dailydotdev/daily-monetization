@@ -43,7 +43,10 @@ var fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
 	for _, ad := range ads {
 		if _, ok := ad["statlink"]; ok {
 			retAd := BsaAd{}
-			retAd.Description, _ = ad["title"].(string)
+			retAd.Description, _ = ad["description"].(string)
+			if len(retAd.Description) == 0 {
+				retAd.Description, _ = ad["title"].(string)
+			}
 			retAd.Image, _ = ad["smallImage"].(string)
 			retAd.Link, _ = ad["statlink"].(string)
 			retAd.Link = fmt.Sprintf("https:%s", retAd.Link)
