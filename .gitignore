@@ -1,6 +1,5 @@
 .idea
 tmp/
-helm/values/*.yaml
 local.sh
 test.sh
 
