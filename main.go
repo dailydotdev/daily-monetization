@@ -213,7 +213,7 @@ func createApp() *App {
 
 func init() {
 	hystrix.ConfigureCommand(hystrixDb, hystrix.CommandConfig{Timeout: 300, MaxConcurrentRequests: 100})
-	hystrix.ConfigureCommand(hystrixCf, hystrix.CommandConfig{Timeout: 700, MaxConcurrentRequests: 100})
+	hystrix.ConfigureCommand(hystrixCf, hystrix.CommandConfig{Timeout: 1000, MaxConcurrentRequests: 100})
 	hystrix.ConfigureCommand(hystrixBsa, hystrix.CommandConfig{Timeout: 700, MaxConcurrentRequests: 100})
 
 	if file, ok := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS"); ok {
