@@ -50,6 +50,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		} else {
 			bsa, err = fetchBsa(r, "CK7DT2QM")
 		}
+		log.Info("fetch bsa", bsa)
 		if err != nil {
 			log.Warn("failed to fetch ad from BSA ", err)
 		} else if bsa != nil {

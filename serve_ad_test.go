@@ -177,6 +177,7 @@ func TestBsaAvailable(t *testing.T) {
 		},
 	}
 
+    fetchCampaigns = campaignNotAvailable
 	fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
 		return &exp[0], nil
 	}
