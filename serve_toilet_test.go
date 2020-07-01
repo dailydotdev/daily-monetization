@@ -9,34 +9,7 @@ import (
 	"testing"
 )
 
-func TestToiletCodefundAvailable(t *testing.T) {
-	exp := []CodefundAd{
-		{
-			Ad:    ad,
-			Pixel: []string{"pixel"},
-		},
-	}
-
-	fetchCodefund = func(r *http.Request, propertyId string) (*CodefundAd, error) {
-		return &exp[0], nil
-	}
-
-	req, err := http.NewRequest("GET", "/a/toilet", nil)
-	assert.Nil(t, err)
-
-	rr := httptest.NewRecorder()
-
-	router := createApp()
-	router.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
-
-	var actual []CodefundAd
-	json.NewDecoder(rr.Body).Decode(&actual)
-	assert.Equal(t, exp, actual, "wrong body")
-}
-
-func TestToiletCodefundFail(t *testing.T) {
+func TestToiletBsaAvailable(t *testing.T) {
 	exp := []BsaAd{
 		{
 			Ad:           ad,
@@ -45,9 +18,6 @@ func TestToiletCodefundFail(t *testing.T) {
 		},
 	}
 
-	fetchCodefund = func(r *http.Request, propertyId string) (*CodefundAd, error) {
-		return nil, errors.New("error")
-	}
 	fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
 		return &exp[0], nil
 	}
@@ -68,7 +38,6 @@ func TestToiletCodefundFail(t *testing.T) {
 }
 
 func TestToiletBsaNotAvailable(t *testing.T) {
-	fetchCodefund = codefundNotAvailable
 	fetchBsa = bsaNotAvailable
 
 	req, err := http.NewRequest("GET", "/a/toilet", nil)
@@ -87,7 +56,6 @@ func TestToiletBsaNotAvailable(t *testing.T) {
 }
 
 func TestToiletBsaNotFail(t *testing.T) {
-	fetchCodefund = codefundNotAvailable
 	fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
 		return nil, errors.New("error")
 	}
