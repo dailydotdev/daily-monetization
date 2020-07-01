@@ -23,10 +23,6 @@ var campaignNotAvailable = func(ctx context.Context, timestamp time.Time) ([]Cam
 	return nil, nil
 }
 
-var codefundNotAvailable = func(r *http.Request, propertyId string) (*CodefundAd, error) {
-	return nil, nil
-}
-
 var bsaNotAvailable = func(r *http.Request, propertyId string) (*BsaAd, error) {
 	return nil, nil
 }
@@ -43,7 +39,6 @@ func TestFallbackCampaignAvailable(t *testing.T) {
 		},
 	}
 
-	fetchCodefund = codefundNotAvailable
 	fetchBsa = bsaNotAvailable
 	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
 		return exp, nil
@@ -65,7 +60,6 @@ func TestFallbackCampaignAvailable(t *testing.T) {
 }
 
 func TestFallbackCampaignNotAvailable(t *testing.T) {
-	fetchCodefund = codefundNotAvailable
 	fetchBsa = bsaNotAvailable
 	fetchCampaigns = campaignNotAvailable
 
@@ -85,7 +79,6 @@ func TestFallbackCampaignNotAvailable(t *testing.T) {
 }
 
 func TestCampaignFail(t *testing.T) {
-	fetchCodefund = codefundNotAvailable
 	fetchBsa = bsaNotAvailable
 
 	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
@@ -119,7 +112,6 @@ func TestCampaignAvailable(t *testing.T) {
 		},
 	}
 
-	fetchCodefund = codefundNotAvailable
 	fetchBsa = bsaNotAvailable
 	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
 		return exp, nil
@@ -156,7 +148,6 @@ func TestCampaignAvailableByGeo(t *testing.T) {
 	getCountryByIP = func(ip string) string {
 		return "united states"
 	}
-	fetchCodefund = codefundNotAvailable
 	fetchBsa = bsaNotAvailable
 	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
 		return exp, nil
@@ -177,69 +168,6 @@ func TestCampaignAvailableByGeo(t *testing.T) {
 	assert.Equal(t, exp, actual, "wrong body")
 }
 
-func TestCodefundAvailable(t *testing.T) {
-	exp := []CodefundAd{
-		{
-			Ad:           ad,
-			Pixel:        []string{"pixel"},
-			ReferralLink: "https://referral.com",
-		},
-	}
-
-	fetchCampaigns = campaignNotAvailable
-	fetchBsa = bsaNotAvailable
-	fetchCodefund = func(r *http.Request, propertyId string) (*CodefundAd, error) {
-		return &exp[0], nil
-	}
-
-	req, err := http.NewRequest("GET", "/a", nil)
-	assert.Nil(t, err)
-
-	rr := httptest.NewRecorder()
-
-	router := createApp()
-	router.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
-
-	var actual []CodefundAd
-	json.NewDecoder(rr.Body).Decode(&actual)
-	assert.Equal(t, exp, actual, "wrong body")
-}
-
-func TestCodefundFail(t *testing.T) {
-	exp := []BsaAd{
-		{
-			Ad:           ad,
-			Pixel:        []string{"pixel"},
-			ReferralLink: "https://referral.com",
-		},
-	}
-
-	fetchCampaigns = campaignNotAvailable
-	fetchBsa = bsaNotAvailable
-	fetchCodefund = func(r *http.Request, propertyId string) (*CodefundAd, error) {
-		return nil, errors.New("error")
-	}
-	fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
-		return &exp[0], nil
-	}
-
-	req, err := http.NewRequest("GET", "/a", nil)
-	assert.Nil(t, err)
-
-	rr := httptest.NewRecorder()
-
-	router := createApp()
-	router.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
-
-	var actual []BsaAd
-	json.NewDecoder(rr.Body).Decode(&actual)
-	assert.Equal(t, exp, actual, "wrong body")
-}
-
 func TestBsaAvailable(t *testing.T) {
 	exp := []BsaAd{
 		{
@@ -249,7 +177,7 @@ func TestBsaAvailable(t *testing.T) {
 		},
 	}
 
-	fetchCodefund = codefundNotAvailable
+    fetchCampaigns = campaignNotAvailable
 	fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
 		return &exp[0], nil
 	}
@@ -281,7 +209,6 @@ func TestBsaFail(t *testing.T) {
 		},
 	}
 
-	fetchCodefund = codefundNotAvailable
 	fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
 		return nil, errors.New("error")
 	}

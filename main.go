@@ -43,15 +43,6 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if res == nil {
-		cf, err := fetchCodefund(r, "114")
-		if err != nil {
-			log.Warn("failed to fetch ad from Codefund ", err)
-		} else if cf != nil {
-			res = []interface{}{*cf}
-		}
-	}
-
-	if res == nil {
 		var bsa *BsaAd
 		var err error
 		if country == "united states" {
@@ -59,6 +50,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		} else {
 			bsa, err = fetchBsa(r, "CK7DT2QM")
 		}
+		log.Info("fetch bsa", bsa)
 		if err != nil {
 			log.Warn("failed to fetch ad from BSA ", err)
 		} else if bsa != nil {
@@ -99,21 +91,12 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 func ServeToilet(w http.ResponseWriter, r *http.Request) {
 	var res []interface{}
 
-	cf, err := fetchCodefund(r, "114")
-	if err != nil {
-		log.Warn("failed to fetch ad from Codefund ", err)
-	} else if cf != nil {
-		res = []interface{}{*cf}
-	}
-
-	if res == nil {
-		bsa, err := fetchBsa(r, "CK7DT2QM")
-		if err != nil {
-			log.Warn("failed to fetch ad from BSA ", err)
-		} else if bsa != nil {
-			res = []interface{}{*bsa}
-		}
-	}
+    bsa, err := fetchBsa(r, "CK7DT2QM")
+    if err != nil {
+        log.Warn("failed to fetch ad from BSA ", err)
+    } else if bsa != nil {
+        res = []interface{}{*bsa}
+    }
 
 	if res == nil {
 		log.Info("no ads to serve for toilet")
@@ -213,7 +196,6 @@ func createApp() *App {
 
 func init() {
 	hystrix.ConfigureCommand(hystrixDb, hystrix.CommandConfig{Timeout: 300, MaxConcurrentRequests: 100})
-	hystrix.ConfigureCommand(hystrixCf, hystrix.CommandConfig{Timeout: 1000, MaxConcurrentRequests: 100})
 	hystrix.ConfigureCommand(hystrixBsa, hystrix.CommandConfig{Timeout: 700, MaxConcurrentRequests: 100})
 
 	if file, ok := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS"); ok {

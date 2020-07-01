@@ -62,16 +62,6 @@ spec:
               secretKeyRef:
                 name: {{ template "daily-monetization.fullname" . }}
                 key: MIGRATIONS_SOURCE
-          - name: CODEFUND_API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: {{ template "daily-monetization.fullname" . }}
-                key: CODEFUND_API_KEY
-          - name: CODEFUND_REFERRAL_LINK
-            valueFrom:
-              configMapKeyRef:
-                name: {{ template "daily-monetization.fullname" . }}
-                key: CODEFUND_REFERRAL_LINK
           volumeMounts:
           - name: config
             mountPath: "/etc/config"
