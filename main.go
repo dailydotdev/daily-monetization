@@ -18,6 +18,12 @@ import (
 )
 
 var gcpOpts []option.ClientOption
+var segmentToId map[string]string = map[string]string{
+    "frontend": "CE7I5K3Y",
+    "backend":   "CE7I5K37",
+    "devops": "CE7I5KQE",
+    "": "CK7DT2QM",
+}
 
 func ServeAd(w http.ResponseWriter, r *http.Request) {
 	var res []interface{}
@@ -48,7 +54,8 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		if country == "united states" {
 			bsa, err = fetchBsa(r, "CE7D5KJL")
 		} else {
-			bsa, err = fetchBsa(r, "CK7DT2QM")
+		    segment, _ := findSegment(r.Context(), r.Header.Get("User-Id"))
+            bsa, err = fetchBsa(r, segmentToId[segment])
 		}
 		if err != nil {
 			log.Warn("failed to fetch ad from BSA ", err)
@@ -90,12 +97,12 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 func ServeToilet(w http.ResponseWriter, r *http.Request) {
 	var res []interface{}
 
-    bsa, err := fetchBsa(r, "CK7DT2QM")
-    if err != nil {
-        log.Warn("failed to fetch ad from BSA ", err)
-    } else if bsa != nil {
-        res = []interface{}{*bsa}
-    }
+	bsa, err := fetchBsa(r, "CK7DT2QM")
+	if err != nil {
+		log.Warn("failed to fetch ad from BSA ", err)
+	} else if bsa != nil {
+		res = []interface{}{*bsa}
+	}
 
 	if res == nil {
 		log.Info("no ads to serve for toilet")
@@ -240,6 +247,7 @@ func main() {
 	defer tearDatabase()
 
 	go subscribeToNewAd()
+	go subscribeToSegmentFound()
 
 	app := createApp()
 	addr := fmt.Sprintf(":%s", getEnv("PORT", "9090"))
