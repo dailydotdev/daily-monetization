@@ -11,6 +11,9 @@ import (
 const pubsubNewAdTopic = "ad-image-processed"
 const pubsubNewAdSub = "monetization-new-ad"
 
+const pubsubSegmentTopic = "segment-found"
+const pubsubSegmentSub = "monetization-segment-found"
+
 var pubsubClient *pubsub.Client = nil
 
 func configurePubsub() error {
@@ -32,6 +35,17 @@ func configurePubsub() error {
 			return err
 		}
 	}
+
+	// Create the subscription if it doesn't exist.
+	if exists, err := pubsubClient.Subscription(pubsubSegmentSub).Exists(ctx); err != nil {
+		return err
+	} else if !exists {
+		log.Info("creating pubsub subscription ", pubsubSegmentSub)
+		if _, err := pubsubClient.CreateSubscription(context.Background(), pubsubSegmentSub, pubsub.SubscriptionConfig{Topic: pubsubClient.Topic(pubsubSegmentTopic)}); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -55,6 +69,37 @@ func subscribeToNewAd() {
 
 		msg.Ack()
 		log.Infof("[AD %s] added new campaign ad", ad.Id)
+	})
+
+	if err != nil {
+		log.Fatal("failed to receive messages from pubsub ", err)
+	}
+}
+
+type SegmentMessage struct {
+	UserId  string
+	Segment string
+}
+
+func subscribeToSegmentFound() {
+	log.Info("receiving messages from ", pubsubSegmentTopic)
+	ctx := context.Background()
+	err := pubsubClient.Subscription(pubsubSegmentSub).Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
+		var data SegmentMessage
+		if err := json.Unmarshal(msg.Data, &data); err != nil {
+			log.Errorf("failed to decode message %v", err)
+			msg.Ack()
+			return
+		}
+
+		if err := updateUserSegment(ctx, data.UserId, data.Segment); err != nil {
+			log.WithField("segment", data).Errorf("failed to update user segment %v", err)
+			msg.Nack()
+			return
+		}
+
+		msg.Ack()
+		log.WithField("segment", data).Infof("updated user segment")
 	})
 
 	if err != nil {
