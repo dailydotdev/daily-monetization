@@ -19,10 +19,10 @@ import (
 
 var gcpOpts []option.ClientOption
 var segmentToId map[string]string = map[string]string{
-    "frontend": "CE7I5K3Y",
-    "backend":   "CE7I5K37",
-    "devops": "CE7I5KQE",
-    "": "CK7DT2QM",
+	"frontend": "CE7I5K3Y",
+	"backend":  "CE7I5K37",
+	"devops":   "CE7I5KQE",
+	"":         "CK7DT2QM",
 }
 
 func ServeAd(w http.ResponseWriter, r *http.Request) {
@@ -49,13 +49,22 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if res == nil {
+		cf, err := fetchEthicalAds(r)
+		if err != nil {
+			log.Warn("failed to fetch ad from EthicalAds ", err)
+		} else if cf != nil {
+			res = []interface{}{*cf}
+		}
+	}
+
+	if res == nil {
 		var bsa *BsaAd
 		var err error
 		if country == "united states" {
 			bsa, err = fetchBsa(r, "CE7D5KJL")
 		} else {
-		    segment, _ := findSegment(r.Context(), r.Header.Get("User-Id"))
-            bsa, err = fetchBsa(r, segmentToId[segment])
+			segment, _ := findSegment(r.Context(), r.Header.Get("User-Id"))
+			bsa, err = fetchBsa(r, segmentToId[segment])
 		}
 		if err != nil {
 			log.Warn("failed to fetch ad from BSA ", err)
@@ -203,6 +212,7 @@ func createApp() *App {
 func init() {
 	hystrix.ConfigureCommand(hystrixDb, hystrix.CommandConfig{Timeout: 300, MaxConcurrentRequests: 100})
 	hystrix.ConfigureCommand(hystrixBsa, hystrix.CommandConfig{Timeout: 700, MaxConcurrentRequests: 100})
+	hystrix.ConfigureCommand(hystrixEa, hystrix.CommandConfig{Timeout: 700, MaxConcurrentRequests: 100})
 
 	if file, ok := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS"); ok {
 		gcpOpts = append(gcpOpts, option.WithCredentialsFile(file))

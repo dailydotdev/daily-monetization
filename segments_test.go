@@ -43,8 +43,8 @@ func TestUpdateSegment(t *testing.T) {
 	err := updateUserSegment(context.Background(), "1", "frontend")
 	assert.Nil(t, err)
 
-    err = updateUserSegment(context.Background(), "1", "backend")
-    assert.Nil(t, err)
+	err = updateUserSegment(context.Background(), "1", "backend")
+	assert.Nil(t, err)
 
 	var res string
 	res, err = findSegment(context.Background(), "1")

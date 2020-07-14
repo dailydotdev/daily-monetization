@@ -28,7 +28,7 @@ var bsaNotAvailable = func(r *http.Request, propertyId string) (*BsaAd, error) {
 }
 
 var emptySegment = func(ctx context.Context, userId string) (string, error) {
-    return "", nil
+	return "", nil
 }
 
 func TestFallbackCampaignAvailable(t *testing.T) {
@@ -43,7 +43,7 @@ func TestFallbackCampaignAvailable(t *testing.T) {
 		},
 	}
 
-    findSegment = emptySegment
+	findSegment = emptySegment
 	fetchBsa = bsaNotAvailable
 	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
 		return exp, nil
@@ -65,7 +65,7 @@ func TestFallbackCampaignAvailable(t *testing.T) {
 }
 
 func TestFallbackCampaignNotAvailable(t *testing.T) {
-    findSegment = emptySegment
+	findSegment = emptySegment
 	fetchBsa = bsaNotAvailable
 	fetchCampaigns = campaignNotAvailable
 
@@ -85,7 +85,7 @@ func TestFallbackCampaignNotAvailable(t *testing.T) {
 }
 
 func TestCampaignFail(t *testing.T) {
-    findSegment = emptySegment
+	findSegment = emptySegment
 	fetchBsa = bsaNotAvailable
 
 	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
@@ -108,7 +108,7 @@ func TestCampaignFail(t *testing.T) {
 }
 
 func TestCampaignAvailable(t *testing.T) {
-    findSegment = emptySegment
+	findSegment = emptySegment
 	exp := []CampaignAd{
 		{
 			Ad:          ad,
@@ -141,7 +141,7 @@ func TestCampaignAvailable(t *testing.T) {
 }
 
 func TestCampaignAvailableByGeo(t *testing.T) {
-    findSegment = emptySegment
+	findSegment = emptySegment
 	exp := []CampaignAd{
 		{
 			Ad:          ad,
@@ -178,7 +178,7 @@ func TestCampaignAvailableByGeo(t *testing.T) {
 }
 
 func TestBsaAvailable(t *testing.T) {
-    findSegment = emptySegment
+	findSegment = emptySegment
 	exp := []BsaAd{
 		{
 			Ad:           ad,
@@ -208,7 +208,7 @@ func TestBsaAvailable(t *testing.T) {
 }
 
 func TestBsaFail(t *testing.T) {
-    findSegment = emptySegment
+	findSegment = emptySegment
 	exp := []CampaignAd{
 		{
 			Ad:          ad,
