@@ -32,8 +32,8 @@ func newMigrate() (*migrate.Migrate, error) {
 	}
 	driver, err := mysql.WithInstance(con, &mysql.Config{})
 	if err != nil {
-        log.Fatal("failed to get driver ", err)
-    }
+		log.Fatal("failed to get driver ", err)
+	}
 	return migrate.NewWithDatabaseInstance(
 		getEnv("MIGRATIONS_SOURCE", "file://migrations"),
 		"mysql", driver)
