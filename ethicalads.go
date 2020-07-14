@@ -1,8 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"net/http"
-	"net/url"
+	"os"
 )
 
 type EthicalAdsAd struct {
@@ -20,23 +21,23 @@ type EthicalAdsResponse struct {
 }
 
 var hystrixEa = "EthicalAds"
+var ethicaladsToken = os.Getenv("ETHICALADS_TOKEN")
 
 var fetchEthicalAds = func(r *http.Request) (*EthicalAdsAd, error) {
-	params := url.Values{}
-	params.Add("callback", "ethicalads")
-	params.Add("format", "json")
-	params.Add("publisher", "dailydev")
-	params.Add("div_ids", "sample-ad")
-	params.Add("ad_types", "image-v1")
-	params.Add("user_ip", getIpAddress(r))
-	params.Add("user_ua", r.UserAgent())
+	ip := getIpAddress(r)
+	ua := r.UserAgent()
+	var body = []byte(`{ "publisher": "dailydev", "placements": [{ "div_id": "ad-div-1", "ad_type": "image-v1" }], "campaign_types": ["paid"], "user_ip": "` + ip + `", "user_ua": "` + ua + `" }`)
 	var res EthicalAdsResponse
-	req, _ := http.NewRequest("GET", "https://server.ethicalads.io/api/v1/decision/?"+params.Encode(), nil)
+	req, _ := http.NewRequest("POST", "https://server.ethicalads.io/api/v1/decision/", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Token "+ethicaladsToken)
 	req = req.WithContext(r.Context())
 	err := getJsonHystrix(hystrixEa, req, &res, true)
-
 	if err != nil {
 		return nil, err
+	}
+	if res.Body == "" {
+		return nil, nil
 	}
 
 	ad := EthicalAdsAd{}

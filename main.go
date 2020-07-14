@@ -49,15 +49,6 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if res == nil {
-		cf, err := fetchEthicalAds(r)
-		if err != nil {
-			log.Warn("failed to fetch ad from EthicalAds ", err)
-		} else if cf != nil {
-			res = []interface{}{*cf}
-		}
-	}
-
-	if res == nil {
 		var bsa *BsaAd
 		var err error
 		if country == "united states" {
@@ -70,6 +61,15 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 			log.Warn("failed to fetch ad from BSA ", err)
 		} else if bsa != nil {
 			res = []interface{}{*bsa}
+		}
+	}
+
+	if res == nil {
+		cf, err := fetchEthicalAds(r)
+		if err != nil {
+			log.Warn("failed to fetch ad from EthicalAds ", err)
+		} else if cf != nil {
+			res = []interface{}{*cf}
 		}
 	}
 
