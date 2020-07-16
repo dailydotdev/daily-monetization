@@ -48,13 +48,13 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	segment, _ := findSegment(r.Context(), r.Header.Get("User-Id"))
 	if res == nil {
 		var bsa *BsaAd
 		var err error
 		if country == "united states" {
 			bsa, err = fetchBsa(r, "CE7D5KJL")
 		} else {
-			segment, _ := findSegment(r.Context(), r.Header.Get("User-Id"))
 			bsa, err = fetchBsa(r, segmentToId[segment])
 		}
 		if err != nil {
@@ -65,7 +65,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if res == nil {
-		cf, err := fetchEthicalAds(r)
+		cf, err := fetchEthicalAds(r, segment)
 		if err != nil {
 			log.Warn("failed to fetch ad from EthicalAds ", err)
 		} else if cf != nil {
