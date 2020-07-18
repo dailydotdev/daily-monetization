@@ -31,6 +31,14 @@ var emptySegment = func(ctx context.Context, userId string) (string, error) {
 	return "", nil
 }
 
+var ethicalAdsNotAvailable = func(r *http.Request, segment string) (*EthicalAdsAd, error) {
+	return nil, nil
+}
+
+var gitAdsNotAvailable = func(r *http.Request) (*GitAdsAd, error) {
+	return nil, nil
+}
+
 func TestFallbackCampaignAvailable(t *testing.T) {
 	exp := []CampaignAd{
 		{
@@ -45,6 +53,8 @@ func TestFallbackCampaignAvailable(t *testing.T) {
 
 	findSegment = emptySegment
 	fetchBsa = bsaNotAvailable
+	fetchEthicalAds = ethicalAdsNotAvailable
+	fetchGitAds = gitAdsNotAvailable
 	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
 		return exp, nil
 	}
