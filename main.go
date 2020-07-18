@@ -74,6 +74,15 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if res == nil {
+		cf, err := fetchGitAds(r)
+		if err != nil {
+			log.Warn("failed to fetch ad from GitAds ", err)
+		} else if cf != nil {
+			res = []interface{}{*cf}
+		}
+	}
+
+	if res == nil {
 		// Look for a fallback campaign ad based on probability
 		prob := rand.Float32()
 		for i := 0; i < len(camps); i++ {
@@ -213,6 +222,7 @@ func init() {
 	hystrix.ConfigureCommand(hystrixDb, hystrix.CommandConfig{Timeout: 300, MaxConcurrentRequests: 100})
 	hystrix.ConfigureCommand(hystrixBsa, hystrix.CommandConfig{Timeout: 700, MaxConcurrentRequests: 100})
 	hystrix.ConfigureCommand(hystrixEa, hystrix.CommandConfig{Timeout: 700, MaxConcurrentRequests: 100})
+	hystrix.ConfigureCommand(hystrixGa, hystrix.CommandConfig{Timeout: 700, MaxConcurrentRequests: 100})
 
 	if file, ok := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS"); ok {
 		gcpOpts = append(gcpOpts, option.WithCredentialsFile(file))
