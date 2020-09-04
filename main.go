@@ -171,6 +171,12 @@ func (h *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "a":
 		h.AdsHandler.ServeHTTP(w, r)
 		return
+	case "v1":
+		head, r.URL.Path = shiftPath(r.URL.Path)
+		if head == "a" {
+			h.AdsHandler.ServeHTTP(w, r)
+		}
+		return
 	}
 
 	http.Error(w, "Not Found", http.StatusNotFound)
