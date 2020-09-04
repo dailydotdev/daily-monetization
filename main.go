@@ -48,7 +48,12 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	segment, _ := findSegment(r.Context(), r.Header.Get("User-Id"))
+	var userId string
+	cookie, _ := r.Cookie("da2")
+	if cookie != nil {
+		userId = cookie.Value
+	}
+	segment, _ := findSegment(r.Context(), userId)
 	if res == nil {
 		var bsa *BsaAd
 		var err error
