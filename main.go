@@ -48,7 +48,12 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	segment, _ := findSegment(r.Context(), r.Header.Get("User-Id"))
+	var userId string
+	cookie, _ := r.Cookie("da2")
+	if cookie != nil {
+		userId = cookie.Value
+	}
+	segment, _ := findSegment(r.Context(), userId)
 	if res == nil {
 		var bsa *BsaAd
 		var err error
@@ -165,6 +170,12 @@ func (h *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	case "a":
 		h.AdsHandler.ServeHTTP(w, r)
+		return
+	case "v1":
+		head, r.URL.Path = shiftPath(r.URL.Path)
+		if head == "a" {
+			h.AdsHandler.ServeHTTP(w, r)
+		}
 		return
 	}
 
