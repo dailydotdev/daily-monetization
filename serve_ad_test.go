@@ -31,6 +31,10 @@ var emptySegment = func(ctx context.Context, userId string) (string, error) {
 	return "", nil
 }
 
+var ethicalNotAvailable = func(r *http.Request, segment string) (*EthicalAdsAd, error) {
+	return nil, nil
+}
+
 func TestFallbackCampaignAvailable(t *testing.T) {
 	exp := []CampaignAd{
 		{
@@ -44,6 +48,7 @@ func TestFallbackCampaignAvailable(t *testing.T) {
 	}
 
 	findSegment = emptySegment
+	fetchEthicalAds = ethicalNotAvailable
 	fetchBsa = bsaNotAvailable
 	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
 		return exp, nil
@@ -66,6 +71,7 @@ func TestFallbackCampaignAvailable(t *testing.T) {
 
 func TestFallbackCampaignNotAvailable(t *testing.T) {
 	findSegment = emptySegment
+	fetchEthicalAds = ethicalNotAvailable
 	fetchBsa = bsaNotAvailable
 	fetchCampaigns = campaignNotAvailable
 
@@ -86,6 +92,7 @@ func TestFallbackCampaignNotAvailable(t *testing.T) {
 
 func TestCampaignFail(t *testing.T) {
 	findSegment = emptySegment
+	fetchEthicalAds = ethicalNotAvailable
 	fetchBsa = bsaNotAvailable
 
 	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
@@ -121,6 +128,7 @@ func TestCampaignAvailable(t *testing.T) {
 	}
 
 	fetchBsa = bsaNotAvailable
+	fetchEthicalAds = ethicalNotAvailable
 	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
 		return exp, nil
 	}
@@ -158,6 +166,7 @@ func TestCampaignAvailableByGeo(t *testing.T) {
 		return "united states"
 	}
 	fetchBsa = bsaNotAvailable
+	fetchEthicalAds = ethicalNotAvailable
 	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
 		return exp, nil
 	}
@@ -178,6 +187,7 @@ func TestCampaignAvailableByGeo(t *testing.T) {
 }
 
 func TestBsaAvailable(t *testing.T) {
+    fetchEthicalAds = ethicalNotAvailable
 	findSegment = emptySegment
 	exp := []BsaAd{
 		{
@@ -208,6 +218,7 @@ func TestBsaAvailable(t *testing.T) {
 }
 
 func TestBsaFail(t *testing.T) {
+    fetchEthicalAds = ethicalNotAvailable
 	findSegment = emptySegment
 	exp := []CampaignAd{
 		{
