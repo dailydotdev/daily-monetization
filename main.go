@@ -25,10 +25,25 @@ var segmentToId map[string]string = map[string]string{
 	"":         "CK7DT2QM",
 }
 
+func getBsaAd(r *http.Request, country string, segment string) (*BsaAd, error) {
+	var bsa *BsaAd
+	var err error
+	if country == "united states" {
+		bsa, err = fetchBsa(r, "CE7D5KJL")
+	} else {
+		bsa, err = fetchBsa(r, segmentToId[segment])
+	}
+	if err != nil {
+		log.Warn("failed to fetch ad from BSA ", err)
+	}
+	return bsa, err
+}
+
 func ServeAd(w http.ResponseWriter, r *http.Request) {
 	var res []interface{}
 
-	ip := getIpAddress(r)
+// 	ip := getIpAddress(r)
+	ip := "208.98.185.89"
 	country := getCountryByIP(ip)
 
 	camps, err := fetchCampaigns(r.Context(), time.Now())
@@ -54,27 +69,36 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		userId = cookie.Value
 	}
 	segment, _ := findSegment(r.Context(), userId)
-	if res == nil {
-		var bsa *BsaAd
-		var err error
-		if country == "united states" {
-			bsa, err = fetchBsa(r, "CE7D5KJL")
-		} else {
-			bsa, err = fetchBsa(r, segmentToId[segment])
+	prob = rand.Float32()
+	if prob < 0.1 {
+		if res == nil {
+			cf, err := fetchEthicalAds(r, segment)
+			if err != nil {
+				log.Warn("failed to fetch ad from EthicalAds ", err)
+			} else if cf != nil {
+				res = []interface{}{*cf}
+			}
 		}
-		if err != nil {
-			log.Warn("failed to fetch ad from BSA ", err)
-		} else if bsa != nil {
-			res = []interface{}{*bsa}
+		if res == nil {
+			bsa, _ := getBsaAd(r, country, segment)
+			if bsa != nil {
+				res = []interface{}{*bsa}
+			}
 		}
-	}
-
-	if res == nil {
-		cf, err := fetchEthicalAds(r, segment)
-		if err != nil {
-			log.Warn("failed to fetch ad from EthicalAds ", err)
-		} else if cf != nil {
-			res = []interface{}{*cf}
+	} else {
+		if res == nil {
+			bsa, _ := getBsaAd(r, country, segment)
+			if bsa != nil {
+				res = []interface{}{*bsa}
+			}
+		}
+		if res == nil {
+			cf, err := fetchEthicalAds(r, segment)
+			if err != nil {
+				log.Warn("failed to fetch ad from EthicalAds ", err)
+			} else if cf != nil {
+				res = []interface{}{*cf}
+			}
 		}
 	}
 
