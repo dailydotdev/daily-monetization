@@ -42,8 +42,7 @@ func getBsaAd(r *http.Request, country string, segment string) (*BsaAd, error) {
 func ServeAd(w http.ResponseWriter, r *http.Request) {
 	var res []interface{}
 
-// 	ip := getIpAddress(r)
-	ip := "208.98.185.89"
+	ip := getIpAddress(r)
 	country := getCountryByIP(ip)
 
 	camps, err := fetchCampaigns(r.Context(), time.Now())
