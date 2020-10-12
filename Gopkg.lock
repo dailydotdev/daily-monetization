@@ -2,10 +2,11 @@
 
 
 [[projects]]
-  digest = "1:42cd6f8342a7d4184c38c92ac74ca9a98301ae3d9012a9f3c09ed39a08296740"
+  digest = "1:5901b079058f7b2dc1d649e155ff643caddbf61bbd99973b00af91630002968c"
   name = "cloud.google.com/go"
   packages = [
     "compute/metadata",
+    "container/apiv1",
     "iam",
     "internal/optional",
     "internal/version",
@@ -20,16 +21,18 @@
   version = "v0.30.0"
 
 [[projects]]
-  digest = "1:45381144fe0fc2ed4d9687c424e13695ac1aa1614031608f823f93b8fd1bf3bc"
+  digest = "1:5ac41eb48deed2d4b96e7e6185b4d28b367df6163baff017efe784d41b90ce42"
   name = "contrib.go.opencensus.io/exporter/stackdriver"
   packages = [
     ".",
     "monitoredresource",
+    "monitoredresource/aws",
+    "monitoredresource/gcp",
     "propagation",
   ]
   pruneopts = "UT"
-  revision = "2b93072101d466aa4120b3c23c2e1b08af01541c"
-  version = "v0.6.0"
+  revision = "0fc2674ae49bc91ffa3b9880ad66f56155ff5616"
+  version = "v0.13.4"
 
 [[projects]]
   branch = "master"
@@ -78,6 +81,18 @@
   pruneopts = "UT"
   revision = "572272ee7c4503c8a32f79ec16b959c9e8a211c3"
   version = "v1.15.55"
+
+[[projects]]
+  digest = "1:0c176d79e94765d8fef7805e84c97fdc8e711b84227c2fe7f7375a632f66cbb0"
+  name = "github.com/census-instrumentation/opencensus-proto"
+  packages = [
+    "gen-go/agent/common/v1",
+    "gen-go/metrics/v1",
+    "gen-go/resource/v1",
+  ]
+  pruneopts = "UT"
+  revision = "4aa53e15cbf1a47bc9087e6cfdca214c1eea4e89"
+  version = "v0.3.0"
 
 [[projects]]
   digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
@@ -216,18 +231,20 @@
   version = "v1.2.2"
 
 [[projects]]
-  digest = "1:9a3ba76159d29e6aa7ec8c8ec59beff1b02e569daa5d57896b8f9fc883ee0c69"
+  digest = "1:51fd8335071dfdc46eb5a1621f269bbc681f56269842907dde638a297328a9ee"
   name = "go.opencensus.io"
   packages = [
     ".",
     "internal",
     "internal/tagencoding",
     "metric/metricdata",
+    "metric/metricexport",
     "metric/metricproducer",
     "plugin/ocgrpc",
     "plugin/ochttp",
     "plugin/ochttp/propagation/b3",
     "resource",
+    "resource/resourcekeys",
     "stats",
     "stats/internal",
     "stats/view",
@@ -380,7 +397,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:537ed4b32d5b0331681636d6e482eff8a7c5fcf62da060310acdc08f15139512"
+  digest = "1:09ca09c92ee659d7c5cee9272d26039e2e13735839cd3acbdfbd40a8400c679a"
   name = "google.golang.org/genproto"
   packages = [
     "googleapis/api/annotations",
@@ -388,6 +405,7 @@
     "googleapis/api/label",
     "googleapis/api/metric",
     "googleapis/api/monitoredres",
+    "googleapis/container/v1",
     "googleapis/devtools/cloudtrace/v2",
     "googleapis/iam/v1",
     "googleapis/monitoring/v3",
@@ -433,6 +451,41 @@
   pruneopts = "UT"
   revision = "8dea3dc473e90c8179e519d91302d0597c0ca1d1"
   version = "v1.15.0"
+
+[[projects]]
+  digest = "1:cccb3a18e62abaccd19c309fc01a69da2509719f5a453cb2e66969f670503245"
+  name = "google.golang.org/protobuf"
+  packages = [
+    "encoding/prototext",
+    "encoding/protowire",
+    "internal/descfmt",
+    "internal/descopts",
+    "internal/detrand",
+    "internal/encoding/defval",
+    "internal/encoding/messageset",
+    "internal/encoding/tag",
+    "internal/encoding/text",
+    "internal/errors",
+    "internal/fieldsort",
+    "internal/filedesc",
+    "internal/filetype",
+    "internal/flags",
+    "internal/genid",
+    "internal/impl",
+    "internal/mapsort",
+    "internal/pragma",
+    "internal/set",
+    "internal/strs",
+    "internal/version",
+    "proto",
+    "reflect/protoreflect",
+    "reflect/protoregistry",
+    "runtime/protoiface",
+    "runtime/protoimpl",
+  ]
+  pruneopts = "UT"
+  revision = "3f7a61f89bb6813f89d981d1870ed68da0b3c3f1"
+  version = "v1.25.0"
 
 [solve-meta]
   analyzer-name = "dep"
