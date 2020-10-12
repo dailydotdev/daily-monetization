@@ -31,7 +31,7 @@
 
 [[constraint]]
   name = "contrib.go.opencensus.io/exporter/stackdriver"
-  version = "0.6.0"
+  version = "0.13.4"
 
 [[constraint]]
   name = "go.opencensus.io"
