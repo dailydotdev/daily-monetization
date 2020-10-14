@@ -160,6 +160,20 @@
   version = "v1.2.0"
 
 [[projects]]
+  digest = "1:400cb6646c388fe84307ab80a55fbec49b48fb2767275543ed17c3b846805e20"
+  name = "github.com/google/go-cmp"
+  packages = [
+    "cmp",
+    "cmp/internal/diff",
+    "cmp/internal/flags",
+    "cmp/internal/function",
+    "cmp/internal/value",
+  ]
+  pruneopts = "UT"
+  revision = "d2fcc899bdc2d134b7c00e36137260db963e193c"
+  version = "v0.5.2"
+
+[[projects]]
   digest = "1:f3fb942d9a52aff79191a8318317147ab76ca609bced931b8be9ab1825569993"
   name = "github.com/google/go-github"
   packages = ["github"]
@@ -341,21 +355,24 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:6d4885456699502ca2444db0a4420096ed941788bcb28e3a80c1df6b5ebbeab9"
+  digest = "1:39e982d8a886dc060f3654746ad89d2605e36c941d7f81025d39f9746b0edfa0"
   name = "google.golang.org/api"
   packages = [
     "googleapi/transport",
     "internal",
+    "internal/impersonate",
     "iterator",
     "option",
     "support/bundler",
     "transport",
+    "transport/cert",
     "transport/grpc",
     "transport/http",
     "transport/http/internal/propagation",
+    "transport/internal/dca",
   ]
   pruneopts = "UT"
-  revision = "c51f30376ab7ec4f22b65de846a41593c8b70f07"
+  revision = "7da870ce4f286cc70fec56ae7cc9175786f5160d"
 
 [[projects]]
   digest = "1:d2cfb607095cee410f25a3c04eed77f76c4721d1bb0cbc894f5d8624b33394c8"
@@ -401,40 +418,64 @@
   revision = "af9cb2a35e7f169ec875002c1829c9b315cddc04"
 
 [[projects]]
-  digest = "1:4ad047d772a7d4841687df9534a767a9e243885ed6d7d2ced6af5995a5dc44b3"
+  digest = "1:654e60d7acf1e15777985e86d5c6fce4a64a4feef985ff0b0a739ce05eaf122a"
   name = "google.golang.org/grpc"
   packages = [
     ".",
+    "attributes",
+    "backoff",
     "balancer",
     "balancer/base",
+    "balancer/grpclb",
+    "balancer/grpclb/grpc_lb_v1",
+    "balancer/grpclb/state",
     "balancer/roundrobin",
+    "binarylog/grpc_binarylog_v1",
     "codes",
     "connectivity",
     "credentials",
+    "credentials/alts",
+    "credentials/alts/internal",
+    "credentials/alts/internal/authinfo",
+    "credentials/alts/internal/conn",
+    "credentials/alts/internal/handshaker",
+    "credentials/alts/internal/handshaker/service",
+    "credentials/alts/internal/proto/grpc_gcp",
+    "credentials/google",
     "credentials/oauth",
     "encoding",
     "encoding/proto",
     "grpclog",
     "internal",
     "internal/backoff",
+    "internal/balancerload",
+    "internal/binarylog",
+    "internal/buffer",
     "internal/channelz",
+    "internal/credentials",
     "internal/envconfig",
+    "internal/grpclog",
     "internal/grpcrand",
+    "internal/grpcsync",
+    "internal/grpcutil",
+    "internal/resolver/dns",
+    "internal/resolver/passthrough",
+    "internal/serviceconfig",
+    "internal/status",
+    "internal/syscall",
     "internal/transport",
     "keepalive",
     "metadata",
-    "naming",
     "peer",
     "resolver",
-    "resolver/dns",
-    "resolver/passthrough",
+    "serviceconfig",
     "stats",
     "status",
     "tap",
   ]
   pruneopts = "UT"
-  revision = "8dea3dc473e90c8179e519d91302d0597c0ca1d1"
-  version = "v1.15.0"
+  revision = "5e8f83304c0563d1ba74db05fee83d9c18ab9a58"
+  version = "v1.32.0"
 
 [[projects]]
   digest = "1:cccb3a18e62abaccd19c309fc01a69da2509719f5a453cb2e66969f670503245"
