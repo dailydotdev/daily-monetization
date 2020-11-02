@@ -290,8 +290,8 @@ func main() {
 	initializeDatabase()
 	defer tearDatabase()
 
-	go subscribeToNewAd()
-	go subscribeToSegmentFound()
+// 	go subscribeToNewAd()
+// 	go subscribeToSegmentFound()
 
 	app := createApp()
 	addr := fmt.Sprintf(":%s", getEnv("PORT", "9090"))
