@@ -276,10 +276,10 @@ func init() {
 		httpClient = &http.Client{}
 	}
 
-	err := configurePubsub()
-	if err != nil {
-		log.Fatal("failed to initialize google pub/sub client ", err)
-	}
+// 	err := configurePubsub()
+// 	if err != nil {
+// 		log.Fatal("failed to initialize google pub/sub client ", err)
+// 	}
 }
 
 func main() {
