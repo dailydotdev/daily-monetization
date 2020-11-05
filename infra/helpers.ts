@@ -46,7 +46,7 @@ export function createEnvVarsFromSecret(
 }
 
 export function serviceAccountToMember(
-  serviceAccount: gcp.serviceaccount.Account,
+  serviceAccount: gcp.serviceaccount.Account | pulumi.Output<gcp.serviceaccount.Account>,
 ): pulumi.Output<string> {
   return serviceAccount.email.apply((email) => `serviceAccount:${email}`);
 }
