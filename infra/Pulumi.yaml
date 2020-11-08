@@ -1,0 +1,3 @@
+name: monetization
+runtime: nodejs
+description: Infrastructure for daily-monetization

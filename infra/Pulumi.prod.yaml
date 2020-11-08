@@ -1,0 +1,12 @@
+config:
+  gcp:project: devkit-prod
+  gcp:region: us-central1
+  monetization:env:
+    campaignsCount: 4
+    dbConnectionString:
+      secure: AAABAMW6DYRChthaLArzst4Az4M9MiDgF4NFo60j1bUetzXohSEhsid/70/aIR6qUHXJqvJC2hFsgrpPblYCWaucEkpV2O5ji5kQ7aCrnIKkmESt7KHAoCepleBRa4TNX0U=
+    ethicaladsToken:
+      secure: AAABACL1XnobfoyPngc4Sd2Lhg9YopSpB7FjV1Y7WuWRDViV45a+6SXTYUI1B2VfrKcss/8M+TQ70Sue/0JJzPGulXWEPjAa
+    gcloudProject: devkit-prod
+    migrationsSource:
+      secure: AAABADZk0aj8pxY5udGY5R+VLE8jLVG/+WKyM1wIq144lggO6kKMID7nEJdfdrq3bpKYeq2jHt4oUSUKMMR2tcMAlfw1HpLNqfw8iTDwb2/8mQOmqSKLVS6ISezYqq+lVYP8xqJ4f2EGFBqL4TtPT47qxxtPeTZw75g6zB3meqIHxtNsn0f3EQ==

@@ -187,7 +187,7 @@ func TestCampaignAvailableByGeo(t *testing.T) {
 }
 
 func TestBsaAvailable(t *testing.T) {
-    fetchEthicalAds = ethicalNotAvailable
+	fetchEthicalAds = ethicalNotAvailable
 	findSegment = emptySegment
 	exp := []BsaAd{
 		{
@@ -218,7 +218,7 @@ func TestBsaAvailable(t *testing.T) {
 }
 
 func TestBsaFail(t *testing.T) {
-    fetchEthicalAds = ethicalNotAvailable
+	fetchEthicalAds = ethicalNotAvailable
 	findSegment = emptySegment
 	exp := []CampaignAd{
 		{
