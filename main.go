@@ -64,6 +64,17 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+    // Premium self-serve
+    prob = rand.Float32()
+    if res == nil && prob < 0.025 {
+        bsa, err := fetchBsa(r, "CEBI62JM")
+        if err != nil {
+            log.Warn("failed to fetch ad from BSA ", err)
+        } else if bsa != nil {
+            res = []interface{}{*bsa}
+        }
+    }
+
 	var userId string
 	cookie, _ := r.Cookie("da2")
 	if cookie != nil {

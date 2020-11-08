@@ -1,7 +1,7 @@
 import * as gcp from '@pulumi/gcp';
 import {
   addIAMRolesToServiceAccount,
-  createEnvVarsFromSecret,
+  createEnvVarsFromSecret, getCloudRunPubSubInvoker,
   infra,
   location, serviceAccountToMember,
 } from './helpers';
@@ -86,7 +86,7 @@ new gcp.cloudrun.IamMember(`${name}-public`, {
 export const serviceUrl = service.statuses[0].url;
 export const bgServiceUrl = bgService.statuses[0].url;
 
-const cloudRunPubSubInvoker = infra.getOutput('cloudRunPubSubInvoker') as Output<gcp.serviceaccount.Account>;
+const cloudRunPubSubInvoker = getCloudRunPubSubInvoker();
 new gcp.cloudrun.IamMember(`${name}-pubsub-invoker`, {
   service: bgService.name,
   location,
@@ -99,6 +99,21 @@ new gcp.pubsub.Subscription(`${name}-sub-segment-found`, {
   name: `${name}-segment-found`,
   pushConfig: {
     pushEndpoint: bgServiceUrl.apply((url) => `${url}/segmentFound`),
+    oidcToken: {
+      serviceAccountEmail: cloudRunPubSubInvoker.email,
+    }
+  },
+  retryPolicy: {
+    minimumBackoff: '10s',
+    maximumBackoff: '600s',
+  }
+});
+
+new gcp.pubsub.Subscription(`${name}-sub-new-ad`, {
+  topic: 'ad-image-processed',
+  name: `${name}-new-ad`,
+  pushConfig: {
+    pushEndpoint: bgServiceUrl.apply((url) => `${url}/newAd`),
     oidcToken: {
       serviceAccountEmail: cloudRunPubSubInvoker.email,
     }
