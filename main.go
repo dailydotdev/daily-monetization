@@ -66,11 +66,12 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 
     // Premium self-serve
     prob = rand.Float32()
-    if res == nil && prob < 0.3 {
+    if res == nil && prob < 0.6 {
         bsa, err := fetchBsa(r, "CEBI62JM")
         if err != nil {
             log.Warn("failed to fetch ad from premium self-serve ", err)
         } else if bsa != nil {
+			log.Info("no ads from premium self-serve ", err)
             res = []interface{}{*bsa}
         }
     }
