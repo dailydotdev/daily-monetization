@@ -64,15 +64,15 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-    // Premium self-serve
-    if res == nil {
-        bsa, err := fetchBsa(r, "CEBI62JM")
-        if err != nil {
-            log.Warn("failed to fetch ad from premium self-serve ", err)
-        } else if bsa != nil {
-            res = []interface{}{*bsa}
-        }
-    }
+	// Premium self-serve
+	if res == nil {
+		bsa, err := fetchBsa(r, "CEBI62JM")
+		if err != nil {
+			log.Warn("failed to fetch ad from premium self-serve ", err)
+		} else if bsa != nil {
+			res = []interface{}{*bsa}
+		}
+	}
 
 	var userId string
 	cookie, _ := r.Cookie("da2")
@@ -110,6 +110,16 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 			} else if cf != nil {
 				res = []interface{}{*cf}
 			}
+		}
+	}
+
+	// Standard self-serve
+	if res == nil {
+		bsa, err := fetchBsa(r, "CEBI62J7")
+		if err != nil {
+			log.Warn("failed to fetch ad from premium self-serve ", err)
+		} else if bsa != nil {
+			res = []interface{}{*bsa}
 		}
 	}
 
