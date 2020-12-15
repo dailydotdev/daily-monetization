@@ -355,7 +355,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:4781603d4f4951c39c58968f2dae07d8f4ce77eba0787b2bdb7598d39e45d8c3"
+  digest = "1:c6269713fdcd8a941e599933eefc4349be1cc03722350e80b532182313453d21"
   name = "google.golang.org/api"
   packages = [
     "googleapi/transport",
@@ -372,7 +372,7 @@
     "transport/internal/dca",
   ]
   pruneopts = "UT"
-  revision = "5fc982eba1f7f5a6441b209af044e111fb74f01f"
+  revision = "15b5f5921e0a3efdab54ced33dcf1bef5a88ff21"
 
 [[projects]]
   digest = "1:d2cfb607095cee410f25a3c04eed77f76c4721d1bb0cbc894f5d8624b33394c8"
