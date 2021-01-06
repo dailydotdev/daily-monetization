@@ -372,7 +372,7 @@
     "transport/internal/dca",
   ]
   pruneopts = "UT"
-  revision = "372ae853f3be162428a74ec57b17f33c1c594be2"
+  revision = "525913241ddd6f94d2ff5dfce582742ca09de97a"
 
 [[projects]]
   digest = "1:d2cfb607095cee410f25a3c04eed77f76c4721d1bb0cbc894f5d8624b33394c8"
