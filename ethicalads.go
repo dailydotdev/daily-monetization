@@ -8,7 +8,8 @@ import (
 
 type EthicalAdsAd struct {
 	Ad
-	Pixel []string
+	Pixel        []string
+	ReferralLink string
 }
 
 type EthicalAdsResponse struct {
@@ -47,6 +48,7 @@ var fetchEthicalAds = func(r *http.Request, segment string) (*EthicalAdsAd, erro
 	ad.Source = "EthicalAds"
 	ad.Pixel = []string{res.ViewUrl}
 	ad.Image = res.Image
+	ad.ReferralLink = "https://www.ethicalads.io/"
 
 	return &ad, nil
 }
