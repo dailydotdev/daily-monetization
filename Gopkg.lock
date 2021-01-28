@@ -21,7 +21,7 @@
   version = "v0.30.0"
 
 [[projects]]
-  digest = "1:5ac41eb48deed2d4b96e7e6185b4d28b367df6163baff017efe784d41b90ce42"
+  digest = "1:a150e128c57d183f5ab680a2c77ac70b2fbbd49a2ca022677ed0e40c64ff55ea"
   name = "contrib.go.opencensus.io/exporter/stackdriver"
   packages = [
     ".",
@@ -31,8 +31,8 @@
     "propagation",
   ]
   pruneopts = "UT"
-  revision = "0fc2674ae49bc91ffa3b9880ad66f56155ff5616"
-  version = "v0.13.4"
+  revision = "1996040a78017ba96c8bd972de452a9a7df00a04"
+  version = "v0.13.5"
 
 [[projects]]
   branch = "master"
