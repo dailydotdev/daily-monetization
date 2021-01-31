@@ -48,7 +48,7 @@ var fetchEthicalAds = func(r *http.Request, segment string) (*EthicalAdsAd, erro
 	ad.Source = "EthicalAds"
 	ad.Pixel = []string{res.ViewUrl}
 	ad.Image = res.Image
-	ad.ReferralLink = "https://www.ethicalads.io/"
+	ad.ReferralLink = "https://www.ethicalads.io/?ref=dailydev"
 
 	return &ad, nil
 }
