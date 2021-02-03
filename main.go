@@ -114,14 +114,14 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Standard self-serve
-	//if res == nil {
-	//	bsa, err := fetchBsa(r, "CEBI62J7")
-	//	if err != nil {
-	//		log.Warn("failed to fetch ad from premium self-serve ", err)
-	//	} else if bsa != nil {
-	//		res = []interface{}{*bsa}
-	//	}
-	//}
+	if res == nil {
+		bsa, err := fetchBsa(r, "CEBI62J7")
+		if err != nil {
+			log.Warn("failed to fetch ad from standard self-serve ", err)
+		} else if bsa != nil {
+			res = []interface{}{*bsa}
+		}
+	}
 
 	if res == nil {
 		// Look for a fallback campaign ad based on probability
