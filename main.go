@@ -27,6 +27,13 @@ var segmentToId map[string]string = map[string]string{
 	"":         "CK7DT2QM",
 }
 
+func segmentToThresholds(segment string) float32 {
+	if segment == "devops" {
+		return 0.5
+	}
+	return 0.1
+}
+
 func getBsaAd(r *http.Request, country string, segment string) (*BsaAd, error) {
 	var bsa *BsaAd
 	var err error
@@ -81,7 +88,8 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	}
 	segment, _ := findSegment(r.Context(), userId)
 	prob = rand.Float32()
-	if prob < 0.1 {
+	threshold := segmentToThresholds(segment)
+	if prob < threshold {
 		if res == nil {
 			cf, err := fetchEthicalAds(r, segment)
 			if err != nil {
