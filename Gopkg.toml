@@ -39,7 +39,7 @@
 
 [[constraint]]
   name = "github.com/sirupsen/logrus"
-  version = "1.7.0"
+  version = "1.8.0"
 
 [[constraint]]
   name = "github.com/golang-migrate/migrate"
