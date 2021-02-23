@@ -24,12 +24,13 @@ var segmentToId map[string]string = map[string]string{
 	"frontend": "CE7I5K3Y",
 	"backend":  "CE7I5K37",
 	"devops":   "CE7I5KQE",
+	"crypto":   "CK7DT2QM",
 	"":         "CK7DT2QM",
 }
 
 func segmentToThresholds(segment string) float32 {
-	if segment == "devops" {
-		return 0.5
+	if segment == "devops" || segment == "crypto" {
+		return 1
 	}
 	return 0.1
 }
