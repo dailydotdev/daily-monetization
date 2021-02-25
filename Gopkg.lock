@@ -275,8 +275,8 @@
     "trace/tracestate",
   ]
   pruneopts = "UT"
-  revision = "13369a4547045c729dd938a203157a208afc244a"
-  version = "v0.22.6"
+  revision = "49838f207d61097fc0ebb8aeef306913388376ca"
+  version = "v0.23.0"
 
 [[projects]]
   digest = "1:a51a1c97b728b00cc514dfe5f78aad3354491792e69b881ea88176dd3fa30ef6"
