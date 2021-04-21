@@ -53,6 +53,7 @@ var fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
 			retAd.ReferralLink, _ = ad["ad_via_link"].(string)
 			retAd.Source = "Carbon"
 			retAd.Company = retAd.Source
+			retAd.ProviderId = "carbon"
 			if pixel, ok := ad["pixel"].(string); ok {
 				retAd.Pixel = strings.Split(pixel, "||")
 				for index := range retAd.Pixel {
