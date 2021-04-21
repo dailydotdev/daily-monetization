@@ -78,6 +78,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Warn("failed to fetch ad from premium self-serve ", err)
 		} else if bsa != nil {
+			bsa.ProviderId = "premium"
 			res = []interface{}{*bsa}
 		}
 	}
@@ -128,6 +129,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Warn("failed to fetch ad from standard self-serve ", err)
 		} else if bsa != nil {
+			bsa.ProviderId = "standard"
 			res = []interface{}{*bsa}
 		}
 	}

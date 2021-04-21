@@ -13,6 +13,7 @@ type Ad struct {
 	Link        string
 	Source      string
 	Company     string
+	ProviderId  string
 }
 
 type CampaignAd struct {
@@ -20,9 +21,9 @@ type CampaignAd struct {
 	Id          string
 	Placeholder string
 	Ratio       float32
-	Probability float32
-	Fallback    bool
-	Geo         string
+	Probability float32 `json:"-"`
+	Fallback    bool    `json:"-"`
+	Geo         string  `json:"-"`
 }
 
 type ScheduledCampaignAd struct {
@@ -63,8 +64,14 @@ var fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignA
 				}
 				if geo.Valid {
 					camp.Geo = geo.String
+					if !camp.Fallback {
+						camp.ProviderId = "direct targeted"
+					}
 				} else {
 					camp.Geo = ""
+					if !camp.Fallback {
+						camp.ProviderId = "direct"
+					}
 				}
 				res = append(res, camp)
 			}
