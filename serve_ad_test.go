@@ -66,7 +66,14 @@ func TestFallbackCampaignAvailable(t *testing.T) {
 
 	var actual []CampaignAd
 	json.NewDecoder(rr.Body).Decode(&actual)
-	assert.Equal(t, exp, actual, "wrong body")
+	assert.Equal(t, []CampaignAd{
+		{
+			Ad:          ad,
+			Placeholder: "placholder",
+			Ratio:       0.5,
+			Id:          "id",
+		},
+	}, actual, "wrong body")
 }
 
 func TestFallbackCampaignNotAvailable(t *testing.T) {
@@ -145,7 +152,14 @@ func TestCampaignAvailable(t *testing.T) {
 
 	var actual []CampaignAd
 	json.NewDecoder(rr.Body).Decode(&actual)
-	assert.Equal(t, exp, actual, "wrong body")
+	assert.Equal(t, []CampaignAd{
+		{
+			Ad:          ad,
+			Placeholder: "placholder",
+			Ratio:       0.5,
+			Id:          "id",
+		},
+	}, actual, "wrong body")
 }
 
 func TestCampaignAvailableByGeo(t *testing.T) {
@@ -183,7 +197,14 @@ func TestCampaignAvailableByGeo(t *testing.T) {
 
 	var actual []CampaignAd
 	json.NewDecoder(rr.Body).Decode(&actual)
-	assert.Equal(t, exp, actual, "wrong body")
+	assert.Equal(t, []CampaignAd{
+		{
+			Ad:          ad,
+			Placeholder: "placholder",
+			Ratio:       0.5,
+			Id:          "id",
+		},
+	}, actual, "wrong body")
 }
 
 func TestBsaAvailable(t *testing.T) {
@@ -251,5 +272,12 @@ func TestBsaFail(t *testing.T) {
 
 	var actual []CampaignAd
 	json.NewDecoder(rr.Body).Decode(&actual)
-	assert.Equal(t, exp, actual, "wrong body")
+	assert.Equal(t, []CampaignAd{
+		{
+			Ad:          ad,
+			Placeholder: "placholder",
+			Ratio:       0.5,
+			Id:          "id",
+		},
+	}, actual, "wrong body")
 }
