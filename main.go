@@ -65,6 +65,8 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < len(camps); i++ {
 		if !camps[i].Fallback && (len(camps[i].Geo) == 0 || strings.Contains(camps[i].Geo, country)) {
 			if prob <= camps[i].Probability {
+				camps[i].Probability = 0
+				camps[i].Geo = ""
 				res = []interface{}{camps[i]}
 				break
 			}
@@ -140,6 +142,8 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		for i := 0; i < len(camps); i++ {
 			if camps[i].Fallback && (len(camps[i].Geo) == 0 || strings.Contains(country, camps[i].Geo)) {
 				if prob <= camps[i].Probability {
+					camps[i].Probability = 0
+					camps[i].Geo = ""
 					res = []interface{}{camps[i]}
 					break
 				}
