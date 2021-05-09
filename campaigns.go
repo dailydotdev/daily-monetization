@@ -21,9 +21,9 @@ type CampaignAd struct {
 	Id          string
 	Placeholder string
 	Ratio       float32
-	Probability float32 `json:"-"`
-	Fallback    bool    `json:"-"`
-	Geo         string  `json:"-"`
+	Probability float32 `json:",omitempty"`
+	Fallback    bool    `json:",omitempty"`
+	Geo         string  `json:",omitempty"`
 }
 
 type ScheduledCampaignAd struct {
