@@ -29,10 +29,10 @@ var segmentToId map[string]string = map[string]string{
 }
 
 func segmentToThresholds(segment string) float32 {
-	if segment == "devops" || segment == "crypto" {
+	if segment == "devops" {
 		return 1
 	}
-	return 0.1
+	return 0.15
 }
 
 func getBsaAd(r *http.Request, country string, segment string) (*BsaAd, error) {
