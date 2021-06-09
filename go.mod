@@ -16,6 +16,6 @@ require (
 	github.com/smartystreets/goconvey v1.6.4 // indirect
 	github.com/stretchr/testify v1.6.1
 	go.opencensus.io v0.23.0
-	go.uber.org/automaxprocs v1.2.0
+	go.uber.org/automaxprocs v1.4.0
 	google.golang.org/api v0.47.1-0.20210606115602-23ee3382decc
 )
