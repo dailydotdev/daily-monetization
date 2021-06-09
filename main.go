@@ -433,24 +433,27 @@ func init() {
 }
 
 func main() {
-	openGeolocationDatabase()
-	defer closeGeolocationDatabase()
-
-	migrateDatabase()
-	initializeDatabase()
-	defer tearDatabase()
-
-	var app http.Handler
-	if len(os.Args) > 1 && os.Args[1] == "background" {
-		log.Info("background processing is on")
-		app = createBackgroundApp()
+	if len(os.Args) > 1 && os.Args[1] == "migrate" {
+		migrateDatabase()
 	} else {
-		app = createApp()
-	}
-	addr := fmt.Sprintf(":%s", getEnv("PORT", "9090"))
-	log.Info("server is listening to ", addr)
-	err := http.ListenAndServe(addr, &ochttp.Handler{Handler: app, Propagation: &propagation.HTTPFormat{}}) // set listen addr
-	if err != nil {
-		log.Fatal("failed to start listening ", err)
+		openGeolocationDatabase()
+		defer closeGeolocationDatabase()
+
+		initializeDatabase()
+		defer tearDatabase()
+
+		var app http.Handler
+		if len(os.Args) > 1 && os.Args[1] == "background" {
+			log.Info("background processing is on")
+			app = createBackgroundApp()
+		} else {
+			app = createApp()
+		}
+		addr := fmt.Sprintf(":%s", getEnv("PORT", "9090"))
+		log.Info("server is listening to ", addr)
+		err := http.ListenAndServe(addr, &ochttp.Handler{Handler: app, Propagation: &propagation.HTTPFormat{}}) // set listen addr
+		if err != nil {
+			log.Fatal("failed to start listening ", err)
+		}
 	}
 }
