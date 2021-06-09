@@ -92,8 +92,8 @@ jobs:
       - gcp-cli/install
       - gcp-cli/initialize
       - run:
-      name: Get cluster credentials
-      command: gcloud container clusters get-credentials prod
+          name: Get cluster credentials
+          command: gcloud container clusters get-credentials prod
       - pulumi/login
       - run:
           name: Install dependencies
