@@ -5,25 +5,31 @@ orbs:
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.11
+      - image: circleci/golang:1.16
       - image: mysql:5.7
         environment:
           MYSQL_DATABASE: test
           MYSQL_ROOT_PASSWORD: 12345
-    working_directory: /go/src/github.com/dailynowco/daily-monetization
     steps:
       - checkout
       - restore_cache:
-          key: dependency-cache-{{ checksum "Gopkg.lock" }}
+          key: dependency-cache-{{ checksum "go.sum" }}
       - run:
           name: Install dependencies
           command: go install .
           environment:
             PROJECT_ROOT: $CIRCLE_PROJECT_REPONAME
+      - run:
+          name: Build
+          command: go build -a -installsuffix cgo -o main
+          environment:
+            PROJECT_ROOT: $CIRCLE_PROJECT_REPONAME
+            CGO_ENABLED: 0
+            GOOS: linux
       - save_cache:
-          key: dependency-cache-{{ checksum "Gopkg.lock" }}
+          key: dependency-cache-{{ checksum "go.sum" }}
           paths:
-            - ./vendor
+            - /go/pkg/mod
       - run:
           name: Wait for MySQL
           command: |
@@ -46,13 +52,6 @@ jobs:
             GOOGLE_APPLICATION_CREDENTIALS: ./key.json
             DB_CONNECTION_STRING: root:12345@(localhost:3306)/test
             CAMPAIGNS_COUNT: 1
-      - run:
-          name: Build
-          command: go build -a -installsuffix cgo -o main
-          environment:
-            PROJECT_ROOT: $CIRCLE_PROJECT_REPONAME
-            CGO_ENABLED: 0
-            GOOS: linux
       - persist_to_workspace:
           root: .
           paths:
