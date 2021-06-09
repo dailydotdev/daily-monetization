@@ -1,127 +1,119 @@
 import * as gcp from '@pulumi/gcp';
 import {
-  addIAMRolesToServiceAccount, config,
-  createEnvVarsFromSecret, getCloudRunPubSubInvoker,
-  infra,
-  location, serviceAccountToMember,
-} from './helpers';
+    CloudRunAccess,
+    config, createCloudRunService, createEnvVarsFromSecret,
+    createK8sServiceAccountFromGCPServiceAccount, createMigrationJob,
+    createServiceAccountAndGrantRoles, getCloudRunPubSubInvoker,
+    imageTag, infra, k8sServiceAccountToIdentity
+} from '@dailydotdev/pulumi-common';
 import {Output} from '@pulumi/pulumi';
 
 const name = 'monetization';
 
-const imageTag = config.require('tag');
-
 const vpcConnector = infra.getOutput('serverlessVPC') as Output<gcp.vpcaccess.Connector>;
 
-const serviceAccount = new gcp.serviceaccount.Account(`${name}-sa`, {
-  accountId: `daily-${name}`,
-  displayName: `daily-${name}`,
-});
-
-addIAMRolesToServiceAccount(
-  name,
-  [
-    {name: 'trace', role: 'roles/cloudtrace.agent'},
-    {name: 'secret', role: 'roles/secretmanager.secretAccessor'},
-  ],
-  serviceAccount,
+const {serviceAccount} = createServiceAccountAndGrantRoles(
+    `${name}-sa`,
+    name,
+    `daily-${name}`,
+    [
+        {name: 'trace', role: 'roles/cloudtrace.agent'},
+        {name: 'secret', role: 'roles/secretmanager.secretAccessor'},
+    ],
 );
 
 const secrets = createEnvVarsFromSecret(name);
 
 const image = `gcr.io/daily-ops/daily-${name}:${imageTag}`;
 
-const service = new gcp.cloudrun.Service(name, {
-  name,
-  location,
-  template: {
-    metadata: {
-      annotations: {
-        'autoscaling.knative.dev/maxScale': '20',
-        'run.googleapis.com/vpc-access-connector': vpcConnector.name,
-      },
-    },
-    spec: {
-      serviceAccountName: serviceAccount.email,
-      containers: [
-        {
-          image,
-          resources: {limits: {cpu: '1', memory: '256Mi'}},
-          envs: secrets,
-        },
-      ],
-    },
-  },
+// Create K8S service account and assign it to a GCP service account
+const {namespace} = config.requireObject<{ namespace: string }>('k8s');
+
+const k8sServiceAccount = createK8sServiceAccountFromGCPServiceAccount(
+    `${name}-k8s-sa`,
+    name,
+    namespace,
+    serviceAccount,
+);
+
+new gcp.serviceaccount.IAMBinding(`${name}-k8s-iam-binding`, {
+    role: 'roles/iam.workloadIdentityUser',
+    serviceAccountId: serviceAccount.id,
+    members: [k8sServiceAccountToIdentity(k8sServiceAccount)],
 });
 
-const bgService = new gcp.cloudrun.Service(`${name}-background`, {
-  name: `${name}-background`,
-  location,
-  template: {
-    metadata: {
-      annotations: {
-        'autoscaling.knative.dev/maxScale': '20',
-        'run.googleapis.com/vpc-access-connector': vpcConnector.name,
-      },
-    },
-    spec: {
-      serviceAccountName: serviceAccount.email,
-      containers: [
-        {
-          image,
-          resources: {limits: {cpu: '1', memory: '256Mi'}},
-          envs: secrets,
-          args: ['background'],
-        },
-      ],
-    },
-  },
-});
+const migrationJob = createMigrationJob(
+    `${name}-migration`,
+    namespace,
+    image,
+    ['/main', 'migrate'],
+    secrets,
+    k8sServiceAccount,
+);
 
-new gcp.cloudrun.IamMember(`${name}-public`, {
-  service: service.name,
-  location,
-  role: 'roles/run.invoker',
-  member: 'allUsers',
-});
+// Deploy to Cloud Run (foreground & background)
+const service = createCloudRunService(
+    name,
+    image,
+    secrets,
+    {cpu: '1', memory: '256Mi'},
+    vpcConnector,
+    serviceAccount,
+    {
+        minScale: 1,
+        concurrency: 250,
+        dependsOn: [migrationJob],
+        access: CloudRunAccess.Public,
+        iamMemberName: `${name}-public`,
+    },
+);
+
+const bgService = createCloudRunService(
+    `${name}-background`,
+    image,
+    secrets,
+    {cpu: '1', memory: '256Mi'},
+    vpcConnector,
+    serviceAccount,
+    {
+        dependsOn: [migrationJob],
+        access: CloudRunAccess.PubSub,
+        iamMemberName: `${name}-pubsub-invoker`,
+        args: ['background'],
+    },
+);
 
 export const serviceUrl = service.statuses[0].url;
 export const bgServiceUrl = bgService.statuses[0].url;
 
 const cloudRunPubSubInvoker = getCloudRunPubSubInvoker();
-new gcp.cloudrun.IamMember(`${name}-pubsub-invoker`, {
-  service: bgService.name,
-  location,
-  role: 'roles/run.invoker',
-  member: serviceAccountToMember(cloudRunPubSubInvoker)
-});
 
 new gcp.pubsub.Subscription(`${name}-sub-segment-found`, {
-  topic: 'segment-found',
-  name: `${name}-segment-found`,
-  pushConfig: {
-    pushEndpoint: bgServiceUrl.apply((url) => `${url}/segmentFound`),
-    oidcToken: {
-      serviceAccountEmail: cloudRunPubSubInvoker.email,
+    topic: 'segment-found',
+    name: `${name}-segment-found`,
+    pushConfig: {
+        pushEndpoint: bgServiceUrl.apply((url) => `${url}/segmentFound`),
+        oidcToken: {
+            serviceAccountEmail: cloudRunPubSubInvoker.email,
+        }
+    },
+    retryPolicy: {
+        minimumBackoff: '10s',
+        maximumBackoff: '600s',
     }
-  },
-  retryPolicy: {
-    minimumBackoff: '10s',
-    maximumBackoff: '600s',
-  }
 });
 
 new gcp.pubsub.Subscription(`${name}-sub-new-ad`, {
-  topic: 'ad-image-processed',
-  name: `${name}-new-ad`,
-  pushConfig: {
-    pushEndpoint: bgServiceUrl.apply((url) => `${url}/newAd`),
-    oidcToken: {
-      serviceAccountEmail: cloudRunPubSubInvoker.email,
+    topic: 'ad-image-processed',
+    name: `${name}-new-ad`,
+    pushConfig: {
+        pushEndpoint: bgServiceUrl.apply((url) => `${url}/newAd`),
+        oidcToken: {
+            serviceAccountEmail: cloudRunPubSubInvoker.email,
+        }
+    },
+    retryPolicy: {
+        minimumBackoff: '10s',
+        maximumBackoff: '600s',
     }
-  },
-  retryPolicy: {
-    minimumBackoff: '10s',
-    maximumBackoff: '600s',
-  }
 });
