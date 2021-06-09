@@ -12,4 +12,3 @@ config:
       secure: AAABADZk0aj8pxY5udGY5R+VLE8jLVG/+WKyM1wIq144lggO6kKMID7nEJdfdrq3bpKYeq2jHt4oUSUKMMR2tcMAlfw1HpLNqfw8iTDwb2/8mQOmqSKLVS6ISezYqq+lVYP8xqJ4f2EGFBqL4TtPT47qxxtPeTZw75g6zB3meqIHxtNsn0f3EQ==
   monetization:k8s:
     namespace: daily
-  monetization:tag: 60461c0d361e8f66af6f0af61781a0d6e79a1ad0
