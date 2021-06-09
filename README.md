@@ -21,8 +21,8 @@ We also have fallback ads for cases where no network can provide a paid impressi
 
 ## Stack
 
-* Go v1.11
-* Go dep managing dependencies.
+* Go v1.16
+* Go mod for managing dependencies.
 * `net/http` as the web framework
 * MySQL as a database
 
