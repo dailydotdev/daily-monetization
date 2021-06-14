@@ -3,7 +3,7 @@ module github.com/dailydotdev/daily-monetization
 go 1.16
 
 require (
-	contrib.go.opencensus.io/exporter/stackdriver v0.13.6
+	contrib.go.opencensus.io/exporter/stackdriver v0.13.7
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/containerd/containerd v1.5.2 // indirect
 	github.com/docker/docker v20.10.7+incompatible // indirect
