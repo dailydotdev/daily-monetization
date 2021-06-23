@@ -13,7 +13,7 @@ import (
 )
 
 var dbConnString = os.Getenv("DB_CONNECTION_STRING")
-var migrationVer uint = 4
+var migrationVer uint = 5
 var db *sql.DB
 var hystrixDb = "db"
 var campStmt *sql.Stmt
@@ -76,7 +76,7 @@ func initializeDatabase() {
 
 	campStmt, err = db.Prepare(
 		"select `id`, `title`, `url`, `image`, `ratio`, `placeholder`, " +
-			"`source`, `company`, `probability`, `fallback`, `geo`" +
+			"`source`, `company`, `probability`, `fallback`, `geo`, `segment`" +
 			"from `ads` where `start` <= ? and end > ?")
 	if err != nil {
 		log.Fatal("failed to prepare query ", err)

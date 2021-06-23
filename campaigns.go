@@ -24,6 +24,7 @@ type CampaignAd struct {
 	Probability float32 `json:",omitempty"`
 	Fallback    bool    `json:",omitempty"`
 	Geo         string  `json:",omitempty"`
+	Segment     string  `json:",omitempty"`
 }
 
 type ScheduledCampaignAd struct {
@@ -58,7 +59,8 @@ var fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignA
 			for rows.Next() {
 				var camp CampaignAd
 				var geo sql.NullString
-				err := rows.Scan(&camp.Id, &camp.Description, &camp.Link, &camp.Image, &camp.Ratio, &camp.Placeholder, &camp.Source, &camp.Company, &camp.Probability, &camp.Fallback, &geo)
+				var segment sql.NullString
+				err := rows.Scan(&camp.Id, &camp.Description, &camp.Link, &camp.Image, &camp.Ratio, &camp.Placeholder, &camp.Source, &camp.Company, &camp.Probability, &camp.Fallback, &geo, &segment)
 				if err != nil {
 					return err
 				}
@@ -72,6 +74,11 @@ var fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignA
 					if !camp.Fallback {
 						camp.ProviderId = "direct"
 					}
+				}
+				if segment.Valid {
+					camp.Segment = segment.String
+				} else {
+					camp.Segment = ""
 				}
 				res = append(res, camp)
 			}
