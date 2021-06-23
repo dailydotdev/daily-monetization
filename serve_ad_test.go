@@ -35,6 +35,10 @@ var ethicalNotAvailable = func(r *http.Request, segment string) (*EthicalAdsAd, 
 	return nil, nil
 }
 
+var kubernetesSegment = func(ctx context.Context, userId string) (string, error) {
+	return "kubernetes", nil
+}
+
 func TestFallbackCampaignAvailable(t *testing.T) {
 	exp := []CampaignAd{
 		{
@@ -206,6 +210,93 @@ func TestCampaignAvailableByGeo(t *testing.T) {
 			Id:          "id",
 		},
 	}, actual, "wrong body")
+}
+
+func TestCampaignAvailableBySegment(t *testing.T) {
+	findSegment = kubernetesSegment
+	exp := []CampaignAd{
+		{
+			Ad:          ad,
+			Placeholder: "placholder",
+			Ratio:       0.5,
+			Id:          "id",
+			Fallback:    false,
+			Probability: 1,
+			Segment:     "kubernetes",
+		},
+	}
+
+	fetchBsa = bsaNotAvailable
+	fetchEthicalAds = ethicalNotAvailable
+	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
+		return exp, nil
+	}
+
+	req, err := http.NewRequest("GET", "/a", nil)
+	assert.Nil(t, err)
+
+	rr := httptest.NewRecorder()
+
+	router := createApp()
+	router.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
+
+	var actual []CampaignAd
+	json.NewDecoder(rr.Body).Decode(&actual)
+	assert.Equal(t, []CampaignAd{
+		{
+			Ad:          ad,
+			Placeholder: "placholder",
+			Ratio:       0.5,
+			Id:          "id",
+		},
+	}, actual, "wrong body")
+}
+
+func TestCampaignNotAvailableBySegment(t *testing.T) {
+	findSegment = emptySegment
+	campaign := []CampaignAd{
+		{
+			Ad:          ad,
+			Placeholder: "placholder",
+			Ratio:       0.5,
+			Id:          "id",
+			Fallback:    false,
+			Probability: 1,
+			Segment:     "kubernetes",
+		},
+	}
+
+	exp := []BsaAd{
+		{
+			Ad:           ad,
+			Pixel:        []string{"pixel"},
+			ReferralLink: "https://referral.com",
+		},
+	}
+
+	fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
+		return &exp[0], nil
+	}
+	fetchEthicalAds = ethicalNotAvailable
+	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
+		return campaign, nil
+	}
+
+	req, err := http.NewRequest("GET", "/a", nil)
+	assert.Nil(t, err)
+
+	rr := httptest.NewRecorder()
+
+	router := createApp()
+	router.ServeHTTP(rr, req)
+
+	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
+
+	var actual []BsaAd
+	json.NewDecoder(rr.Body).Decode(&actual)
+	assert.Equal(t, exp, actual, "wrong body")
 }
 
 func TestBsaAvailable(t *testing.T) {

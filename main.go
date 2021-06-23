@@ -21,11 +21,12 @@ import (
 
 var gcpOpts []option.ClientOption
 var segmentToId map[string]string = map[string]string{
-	"frontend": "CE7I5K3Y",
-	"backend":  "CE7I5K37",
-	"devops":   "CE7I5KQE",
-	"crypto":   "CK7DT2QM",
-	"":         "CK7DT2QM",
+	"frontend":   "CE7I5K3Y",
+	"backend":    "CE7I5K37",
+	"devops":     "CE7I5KQE",
+	"kubernetes": "CE7I5KQE",
+	"crypto":     "CK7DT2QM",
+	"":           "CK7DT2QM",
 }
 
 func segmentToThresholds(segment string) float32 {
@@ -55,6 +56,13 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	ip := getIpAddress(r)
 	country := getCountryByIP(ip)
 
+	var userId string
+	cookie, _ := r.Cookie("da2")
+	if cookie != nil {
+		userId = cookie.Value
+	}
+	segment, _ := findSegment(r.Context(), userId)
+
 	camps, err := fetchCampaigns(r.Context(), time.Now())
 	if err != nil {
 		log.Warn("failed to fetch campaigns ", err)
@@ -63,10 +71,11 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	// Look for a campaign ad based on probability
 	prob := rand.Float32()
 	for i := 0; i < len(camps); i++ {
-		if !camps[i].Fallback && (len(camps[i].Geo) == 0 || strings.Contains(camps[i].Geo, country)) {
+		if !camps[i].Fallback && (len(camps[i].Geo) == 0 || strings.Contains(camps[i].Geo, country)) && (len(camps[i].Segment) == 0 || (strings.Contains(camps[i].Segment, segment) && len(segment) > 0)) {
 			if prob <= camps[i].Probability {
 				camps[i].Probability = 0
 				camps[i].Geo = ""
+				camps[i].Segment = ""
 				res = []interface{}{camps[i]}
 				break
 			}
@@ -85,12 +94,6 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	var userId string
-	cookie, _ := r.Cookie("da2")
-	if cookie != nil {
-		userId = cookie.Value
-	}
-	segment, _ := findSegment(r.Context(), userId)
 	prob = rand.Float32()
 	threshold := segmentToThresholds(segment)
 	if prob < threshold {
@@ -144,6 +147,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 				if prob <= camps[i].Probability {
 					camps[i].Probability = 0
 					camps[i].Geo = ""
+					camps[i].Segment = ""
 					res = []interface{}{camps[i]}
 					break
 				}
