@@ -115,5 +115,8 @@ new gcp.pubsub.Subscription(`${name}-sub-new-ad`, {
     retryPolicy: {
         minimumBackoff: '10s',
         maximumBackoff: '600s',
-    }
+    },
+    expirationPolicy: {
+        ttl: '',
+    },
 });
