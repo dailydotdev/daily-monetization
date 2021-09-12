@@ -72,3 +72,16 @@ func TestDeleteOldUserTags(t *testing.T) {
 	rows.Scan(&count)
 	assert.Equal(t, 2, count)
 }
+
+func TestGetUserTags(t *testing.T) {
+	migrateDatabase()
+	initializeDatabase()
+	defer tearDatabase()
+	defer dropDatabase()
+	_, err := db.Exec("INSERT INTO user_tags (user_id, tag, last_read) VALUES ('1', 'webdev', '2021-01-12 08:54:07'), ('1', 'php', '2021-01-12 08:54:07'), ('2', 'webdev', '2021-01-12 08:54:07')")
+	assert.Nil(t, err)
+
+	tags, err := getUserTags(context.Background(), "1")
+	assert.Nil(t, err)
+	assert.Equal(t, []string{"php", "webdev"}, tags)
+}

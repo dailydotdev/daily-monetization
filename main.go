@@ -56,14 +56,13 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	ip := getIpAddress(r)
 	country := getCountryByIP(ip)
 
+	var segment = ""
 	var userId string
 	cookie, _ := r.Cookie("da2")
 	if cookie != nil {
 		userId = cookie.Value
 	}
-	segment, _ := findSegment(r.Context(), userId)
-
-	camps, err := fetchCampaigns(r.Context(), time.Now())
+	camps, err := fetchCampaigns(r.Context(), time.Now(), userId)
 	if err != nil {
 		log.Warn("failed to fetch campaigns ", err)
 	}
@@ -71,11 +70,10 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	// Look for a campaign ad based on probability
 	prob := rand.Float32()
 	for i := 0; i < len(camps); i++ {
-		if !camps[i].Fallback && (len(camps[i].Geo) == 0 || strings.Contains(camps[i].Geo, country)) && (len(camps[i].Segment) == 0 || (strings.Contains(camps[i].Segment, segment) && len(segment) > 0)) {
+		if !camps[i].Fallback && (len(camps[i].Geo) == 0 || strings.Contains(camps[i].Geo, country)) {
 			if prob <= camps[i].Probability {
 				camps[i].Probability = 0
 				camps[i].Geo = ""
-				camps[i].Segment = ""
 				res = []interface{}{camps[i]}
 				break
 			}
@@ -96,9 +94,13 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 
 	prob = rand.Float32()
 	threshold := segmentToThresholds(segment)
+	tags, err := getUserTags(r.Context(), userId)
+	if err != nil {
+		log.Warnln("getUserTags", err)
+	}
 	if prob < threshold {
 		if res == nil {
-			cf, err := fetchEthicalAds(r, segment)
+			cf, err := fetchEthicalAds(r, tags)
 			if err != nil {
 				log.Warn("failed to fetch ad from EthicalAds ", err)
 			} else if cf != nil {
@@ -119,7 +121,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if res == nil {
-			cf, err := fetchEthicalAds(r, segment)
+			cf, err := fetchEthicalAds(r, tags)
 			if err != nil {
 				log.Warn("failed to fetch ad from EthicalAds ", err)
 			} else if cf != nil {
@@ -147,7 +149,6 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 				if prob <= camps[i].Probability {
 					camps[i].Probability = 0
 					camps[i].Geo = ""
-					camps[i].Segment = ""
 					res = []interface{}{camps[i]}
 					break
 				}

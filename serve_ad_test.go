@@ -19,7 +19,7 @@ var ad = Ad{
 	Company:     "company",
 }
 
-var campaignNotAvailable = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
+var campaignNotAvailable = func(ctx context.Context, timestamp time.Time, userId string) ([]CampaignAd, error) {
 	return nil, nil
 }
 
@@ -27,16 +27,12 @@ var bsaNotAvailable = func(r *http.Request, propertyId string) (*BsaAd, error) {
 	return nil, nil
 }
 
-var emptySegment = func(ctx context.Context, userId string) (string, error) {
-	return "", nil
-}
-
-var ethicalNotAvailable = func(r *http.Request, segment string) (*EthicalAdsAd, error) {
+var ethicalNotAvailable = func(r *http.Request, keywords []string) (*EthicalAdsAd, error) {
 	return nil, nil
 }
 
-var kubernetesSegment = func(ctx context.Context, userId string) (string, error) {
-	return "kubernetes", nil
+var emptyUserTags = func(ctx context.Context, userId string) ([]string, error) {
+	return []string{}, nil
 }
 
 func TestFallbackCampaignAvailable(t *testing.T) {
@@ -51,10 +47,10 @@ func TestFallbackCampaignAvailable(t *testing.T) {
 		},
 	}
 
-	findSegment = emptySegment
 	fetchEthicalAds = ethicalNotAvailable
 	fetchBsa = bsaNotAvailable
-	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
+	getUserTags = emptyUserTags
+	fetchCampaigns = func(ctx context.Context, timestamp time.Time, userId string) ([]CampaignAd, error) {
 		return exp, nil
 	}
 
@@ -82,7 +78,6 @@ func TestFallbackCampaignAvailable(t *testing.T) {
 }
 
 func TestFallbackCampaignNotAvailable(t *testing.T) {
-	findSegment = emptySegment
 	fetchEthicalAds = ethicalNotAvailable
 	fetchBsa = bsaNotAvailable
 	fetchCampaigns = campaignNotAvailable
@@ -103,11 +98,10 @@ func TestFallbackCampaignNotAvailable(t *testing.T) {
 }
 
 func TestCampaignFail(t *testing.T) {
-	findSegment = emptySegment
 	fetchEthicalAds = ethicalNotAvailable
 	fetchBsa = bsaNotAvailable
 
-	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
+	fetchCampaigns = func(ctx context.Context, timestamp time.Time, userId string) ([]CampaignAd, error) {
 		return nil, errors.New("error")
 	}
 
@@ -127,7 +121,6 @@ func TestCampaignFail(t *testing.T) {
 }
 
 func TestCampaignAvailable(t *testing.T) {
-	findSegment = emptySegment
 	exp := []CampaignAd{
 		{
 			Ad:          ad,
@@ -141,7 +134,7 @@ func TestCampaignAvailable(t *testing.T) {
 
 	fetchBsa = bsaNotAvailable
 	fetchEthicalAds = ethicalNotAvailable
-	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
+	fetchCampaigns = func(ctx context.Context, timestamp time.Time, userId string) ([]CampaignAd, error) {
 		return exp, nil
 	}
 
@@ -168,7 +161,6 @@ func TestCampaignAvailable(t *testing.T) {
 }
 
 func TestCampaignAvailableByGeo(t *testing.T) {
-	findSegment = emptySegment
 	exp := []CampaignAd{
 		{
 			Ad:          ad,
@@ -186,7 +178,7 @@ func TestCampaignAvailableByGeo(t *testing.T) {
 	}
 	fetchBsa = bsaNotAvailable
 	fetchEthicalAds = ethicalNotAvailable
-	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
+	fetchCampaigns = func(ctx context.Context, timestamp time.Time, userId string) ([]CampaignAd, error) {
 		return exp, nil
 	}
 
@@ -210,98 +202,10 @@ func TestCampaignAvailableByGeo(t *testing.T) {
 			Id:          "id",
 		},
 	}, actual, "wrong body")
-}
-
-func TestCampaignAvailableBySegment(t *testing.T) {
-	findSegment = kubernetesSegment
-	exp := []CampaignAd{
-		{
-			Ad:          ad,
-			Placeholder: "placholder",
-			Ratio:       0.5,
-			Id:          "id",
-			Fallback:    false,
-			Probability: 1,
-			Segment:     "kubernetes",
-		},
-	}
-
-	fetchBsa = bsaNotAvailable
-	fetchEthicalAds = ethicalNotAvailable
-	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
-		return exp, nil
-	}
-
-	req, err := http.NewRequest("GET", "/a", nil)
-	assert.Nil(t, err)
-
-	rr := httptest.NewRecorder()
-
-	router := createApp()
-	router.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
-
-	var actual []CampaignAd
-	json.NewDecoder(rr.Body).Decode(&actual)
-	assert.Equal(t, []CampaignAd{
-		{
-			Ad:          ad,
-			Placeholder: "placholder",
-			Ratio:       0.5,
-			Id:          "id",
-		},
-	}, actual, "wrong body")
-}
-
-func TestCampaignNotAvailableBySegment(t *testing.T) {
-	findSegment = emptySegment
-	campaign := []CampaignAd{
-		{
-			Ad:          ad,
-			Placeholder: "placholder",
-			Ratio:       0.5,
-			Id:          "id",
-			Fallback:    false,
-			Probability: 1,
-			Segment:     "kubernetes",
-		},
-	}
-
-	exp := []BsaAd{
-		{
-			Ad:           ad,
-			Pixel:        []string{"pixel"},
-			ReferralLink: "https://referral.com",
-		},
-	}
-
-	fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
-		return &exp[0], nil
-	}
-	fetchEthicalAds = ethicalNotAvailable
-	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
-		return campaign, nil
-	}
-
-	req, err := http.NewRequest("GET", "/a", nil)
-	assert.Nil(t, err)
-
-	rr := httptest.NewRecorder()
-
-	router := createApp()
-	router.ServeHTTP(rr, req)
-
-	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
-
-	var actual []BsaAd
-	json.NewDecoder(rr.Body).Decode(&actual)
-	assert.Equal(t, exp, actual, "wrong body")
 }
 
 func TestBsaAvailable(t *testing.T) {
 	fetchEthicalAds = ethicalNotAvailable
-	findSegment = emptySegment
 	exp := []BsaAd{
 		{
 			Ad:           ad,
@@ -332,7 +236,6 @@ func TestBsaAvailable(t *testing.T) {
 
 func TestBsaFail(t *testing.T) {
 	fetchEthicalAds = ethicalNotAvailable
-	findSegment = emptySegment
 	exp := []CampaignAd{
 		{
 			Ad:          ad,
@@ -348,7 +251,7 @@ func TestBsaFail(t *testing.T) {
 		return nil, errors.New("error")
 	}
 
-	fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
+	fetchCampaigns = func(ctx context.Context, timestamp time.Time, userId string) ([]CampaignAd, error) {
 		return exp, nil
 	}
 
