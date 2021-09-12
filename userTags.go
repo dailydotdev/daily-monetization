@@ -36,3 +36,38 @@ func deleteOldTags(ctx context.Context) error {
 			return nil
 		}, nil)
 }
+
+var getUserTags = func(ctx context.Context, userId string) ([]string, error) {
+	output := make(chan []string, 1)
+	errors := hystrix.GoC(ctx, hystrixDb,
+		func(ctx context.Context) error {
+			rows, err := getUserTagsStmt.QueryContext(ctx, userId)
+			if err != nil {
+				return err
+			}
+			defer rows.Close()
+
+			var res []string
+			var tag string
+			for rows.Next() {
+				err = rows.Scan(&tag)
+				if err != nil {
+					return err
+				}
+				res = append(res, tag)
+			}
+			err = rows.Err()
+			if err != nil {
+				return err
+			}
+
+			output <- res
+			return nil
+		}, nil)
+	select {
+	case out := <-output:
+		return out, nil
+	case err := <-errors:
+		return nil, err
+	}
+}

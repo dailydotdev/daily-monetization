@@ -24,7 +24,6 @@ type CampaignAd struct {
 	Probability float32 `json:",omitempty"`
 	Fallback    bool    `json:",omitempty"`
 	Geo         string  `json:",omitempty"`
-	Segment     string  `json:",omitempty"`
 }
 
 type ScheduledCampaignAd struct {
@@ -45,11 +44,11 @@ var addCampaign = func(ctx context.Context, camp ScheduledCampaignAd) error {
 		}, nil)
 }
 
-var fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignAd, error) {
+var fetchCampaigns = func(ctx context.Context, timestamp time.Time, userId string) ([]CampaignAd, error) {
 	output := make(chan []CampaignAd, 1)
 	errors := hystrix.GoC(ctx, hystrixDb,
 		func(ctx context.Context) error {
-			rows, err := campStmt.QueryContext(ctx, timestamp, timestamp)
+			rows, err := campStmt.QueryContext(ctx, userId, timestamp, timestamp)
 			if err != nil {
 				return err
 			}
@@ -59,8 +58,7 @@ var fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignA
 			for rows.Next() {
 				var camp CampaignAd
 				var geo sql.NullString
-				var segment sql.NullString
-				err := rows.Scan(&camp.Id, &camp.Description, &camp.Link, &camp.Image, &camp.Ratio, &camp.Placeholder, &camp.Source, &camp.Company, &camp.Probability, &camp.Fallback, &geo, &segment)
+				err = rows.Scan(&camp.Id, &camp.Description, &camp.Link, &camp.Image, &camp.Ratio, &camp.Placeholder, &camp.Source, &camp.Company, &camp.Probability, &camp.Fallback, &geo)
 				if err != nil {
 					return err
 				}
@@ -74,11 +72,6 @@ var fetchCampaigns = func(ctx context.Context, timestamp time.Time) ([]CampaignA
 					if !camp.Fallback {
 						camp.ProviderId = "direct"
 					}
-				}
-				if segment.Valid {
-					camp.Segment = segment.String
-				} else {
-					camp.Segment = ""
 				}
 				res = append(res, camp)
 			}

@@ -20,8 +20,7 @@ var db *sql.DB
 var hystrixDb = "db"
 var campStmt *sql.Stmt
 var addCampStmt *sql.Stmt
-var updateSegmentStmt *sql.Stmt
-var findSegmentStmt *sql.Stmt
+var getUserTagsStmt *sql.Stmt
 
 func openDatabaseConnection() (*sql.DB, error) {
 	return sql.Open("mysql", dbConnString+"?charset=utf8mb4,utf8")
@@ -76,10 +75,7 @@ func initializeDatabase() {
 		log.Fatal("failed to open sql ", err)
 	}
 
-	campStmt, err = db.Prepare(
-		"select `id`, `title`, `url`, `image`, `ratio`, `placeholder`, " +
-			"`source`, `company`, `probability`, `fallback`, `geo`, `segment`" +
-			"from `ads` where `start` <= ? and end > ?")
+	campStmt, err = db.Prepare("select id, title, url, image, ratio, placeholder, source, company, probability, fallback, geo from ads left join (select ad_id, max(relevant) as relevant from (select ad_id, exists (select user_id from user_tags where user_tags.tag = ad_tags.tag and user_tags.user_id = ?) as relevant from ad_tags) as res group by ad_id) relevant_ads on ads.id = relevant_ads.ad_id where `start` <= ? and end > ? and (relevant_ads.relevant = 1 or relevant_ads.ad_id is null)")
 	if err != nil {
 		log.Fatal("failed to prepare query ", err)
 	}
@@ -93,17 +89,7 @@ func initializeDatabase() {
 		log.Fatal("failed to prepare query ", err)
 	}
 
-	updateSegmentStmt, err = db.Prepare(
-		"insert into `segments` " +
-			"(`user_id`, `segment`) " +
-			"values (?, ?) on duplicate key update segment = ?")
-	if err != nil {
-		log.Fatal("failed to prepare query ", err)
-	}
-
-	findSegmentStmt, err = db.Prepare(
-		"select `segment` " +
-			"from `segments` where `user_id` = ? limit 1")
+	getUserTagsStmt, err = db.Prepare("select tag from user_tags where user_id = ?")
 	if err != nil {
 		log.Fatal("failed to prepare query ", err)
 	}
@@ -112,6 +98,7 @@ func initializeDatabase() {
 func tearDatabase() {
 	addCampStmt.Close()
 	campStmt.Close()
+	getUserTagsStmt.Close()
 
 	db.Close()
 }
