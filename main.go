@@ -233,11 +233,11 @@ type App struct {
 }
 
 type NewAdHandler struct{}
-type SegmentFoundHandler struct{}
+type ViewEventHandler struct{}
 type BackgroundApp struct {
 	HealthHandler       *HealthHandler
 	NewAdHandler        *NewAdHandler
-	SegmentFoundHandler *SegmentFoundHandler
+	ViewEventHandler    *ViewEventHandler
 }
 
 func (h *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -295,8 +295,8 @@ func (h *BackgroundApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "newAd":
 		h.NewAdHandler.ServeHTTP(w, r)
 		return
-	case "segmentFound":
-		h.SegmentFoundHandler.ServeHTTP(w, r)
+	case "view":
+		h.ViewEventHandler.ServeHTTP(w, r)
 		return
 	}
 
@@ -344,7 +344,12 @@ type SegmentMessage struct {
 	Segment string
 }
 
-func (h *SegmentFoundHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+type ViewMessage struct {
+	UserId string
+	Tags   []string
+}
+
+func (h *ViewEventHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		if r.URL.Path == "/" {
 			var msg PubSubMessage
@@ -359,19 +364,17 @@ func (h *SegmentFoundHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 				http.Error(w, "Bad Request", http.StatusBadRequest)
 				return
 			}
-			var data SegmentMessage
+			var data ViewMessage
 			if err := json.Unmarshal(msg.Message.Data, &data); err != nil {
 				log.Errorf("failed to decode message %v", err)
 				return
 			}
 
-			if err := updateUserSegment(r.Context(), data.UserId, data.Segment); err != nil {
-				log.WithField("segment", data).Errorf("failed to update user segment %v", err)
+			if err := addOrUpdateUserTags(r.Context(), data.UserId, data.Tags); err != nil {
+				log.WithField("view", data).Errorf("addOrUpdateUserTags %v", err)
 				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 				return
 			}
-
-			log.WithField("segment", data).Infof("updated user segment")
 			return
 		}
 	}
@@ -397,8 +400,9 @@ func createApp() *App {
 
 func createBackgroundApp() *BackgroundApp {
 	return &BackgroundApp{
-		HealthHandler: new(HealthHandler),
-		NewAdHandler:  new(NewAdHandler),
+		HealthHandler:    new(HealthHandler),
+		NewAdHandler:     new(NewAdHandler),
+		ViewEventHandler: new(ViewEventHandler),
 	}
 }
 
@@ -437,7 +441,7 @@ func init() {
 }
 
 func main() {
-	if len(os.Args) > 1 && os.Args[1] == "migrate" {
+	if true {
 		migrateDatabase()
 	} else {
 		openGeolocationDatabase()
