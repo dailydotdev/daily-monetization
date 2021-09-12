@@ -35,6 +35,8 @@ var emptyUserTags = func(ctx context.Context, userId string) ([]string, error) {
 	return []string{}, nil
 }
 
+var originalGetUserTags = getUserTags
+
 func TestFallbackCampaignAvailable(t *testing.T) {
 	exp := []CampaignAd{
 		{
@@ -75,6 +77,7 @@ func TestFallbackCampaignAvailable(t *testing.T) {
 			Fallback:    true,
 		},
 	}, actual, "wrong body")
+	getUserTags = originalGetUserTags
 }
 
 func TestFallbackCampaignNotAvailable(t *testing.T) {
