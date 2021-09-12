@@ -235,9 +235,9 @@ type App struct {
 type NewAdHandler struct{}
 type ViewEventHandler struct{}
 type BackgroundApp struct {
-	HealthHandler       *HealthHandler
-	NewAdHandler        *NewAdHandler
-	ViewEventHandler    *ViewEventHandler
+	HealthHandler    *HealthHandler
+	NewAdHandler     *NewAdHandler
+	ViewEventHandler *ViewEventHandler
 }
 
 func (h *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -370,10 +370,12 @@ func (h *ViewEventHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			if err := addOrUpdateUserTags(r.Context(), data.UserId, data.Tags); err != nil {
-				log.WithField("view", data).Errorf("addOrUpdateUserTags %v", err)
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
+			if len(data.Tags) > 0 {
+				if err := addOrUpdateUserTags(r.Context(), data.UserId, data.Tags); err != nil {
+					log.WithField("view", data).Errorf("addOrUpdateUserTags %v", err)
+					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+					return
+				}
 			}
 			return
 		}
