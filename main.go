@@ -441,7 +441,7 @@ func init() {
 }
 
 func main() {
-	if true {
+	if len(os.Args) > 1 && os.Args[1] == "migrate" {
 		migrateDatabase()
 	} else {
 		openGeolocationDatabase()
