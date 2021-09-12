@@ -88,11 +88,11 @@ export const bgServiceUrl = bgService.statuses[0].url;
 
 const cloudRunPubSubInvoker = getCloudRunPubSubInvoker();
 
-new gcp.pubsub.Subscription(`${name}-sub-segment-found`, {
-    topic: 'segment-found',
-    name: `${name}-segment-found`,
+new gcp.pubsub.Subscription(`${name}-sub-views`, {
+    topic: 'views',
+    name: `${name}-views`,
     pushConfig: {
-        pushEndpoint: bgServiceUrl.apply((url) => `${url}/segmentFound`),
+        pushEndpoint: bgServiceUrl.apply((url) => `${url}/view`),
         oidcToken: {
             serviceAccountEmail: cloudRunPubSubInvoker.email,
         }

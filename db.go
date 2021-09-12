@@ -13,7 +13,9 @@ import (
 )
 
 var dbConnString = os.Getenv("DB_CONNECTION_STRING")
-var migrationVer uint = 5
+
+const migrationVer uint = 6
+
 var db *sql.DB
 var hystrixDb = "db"
 var campStmt *sql.Stmt
