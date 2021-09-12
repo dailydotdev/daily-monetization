@@ -46,7 +46,7 @@ jobs:
           command: echo $GCLOUD_SERVICE_KEY > key.json
       - run:
           name: Test
-          command: go test
+          command: go test -p 1
           environment:
             PROJECT_ROOT: $CIRCLE_PROJECT_REPONAME
             GCLOUD_PROJECT: daily-ops
