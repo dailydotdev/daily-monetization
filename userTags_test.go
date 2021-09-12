@@ -49,3 +49,26 @@ func TestAddOrUpdateUserTags(t *testing.T) {
 	err = rows.Err()
 	assert.Nil(t, err)
 }
+
+func TestDeleteOldUserTags(t *testing.T) {
+	migrateDatabase()
+	initializeDatabase()
+	defer tearDatabase()
+	defer dropDatabase()
+	_, err := db.Exec("INSERT INTO user_tags (user_id, tag, last_read) VALUES ('1', 'webdev', '2021-01-12 08:54:07')")
+	assert.Nil(t, err)
+
+	err = addOrUpdateUserTags(context.Background(), "1", []string{"php", "javascript"})
+	assert.Nil(t, err)
+
+	err = deleteOldTags(context.Background())
+	assert.Nil(t, err)
+
+	rows, err := db.Query("SELECT count(*) FROM user_tags")
+	assert.Nil(t, err)
+	defer rows.Close()
+	rows.Next()
+	var count int
+	rows.Scan(&count)
+	assert.Equal(t, 2, count)
+}

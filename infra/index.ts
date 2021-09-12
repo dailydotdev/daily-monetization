@@ -4,7 +4,7 @@ import {
     config, createCloudRunService, createEnvVarsFromSecret,
     createK8sServiceAccountFromGCPServiceAccount, createMigrationJob,
     createServiceAccountAndGrantRoles, getCloudRunPubSubInvoker,
-    imageTag, infra, k8sServiceAccountToIdentity
+    imageTag, infra, k8sServiceAccountToIdentity, createCronJobs
 } from '@dailydotdev/pulumi-common';
 import {Output} from '@pulumi/pulumi';
 
@@ -120,3 +120,8 @@ new gcp.pubsub.Subscription(`${name}-sub-new-ad`, {
         ttl: '',
     },
 });
+
+createCronJobs(name, [{
+    name: 'delete-old-tags',
+    schedule: '6 10 * * 0',
+}], bgServiceUrl);

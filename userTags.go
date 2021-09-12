@@ -25,3 +25,14 @@ func addOrUpdateUserTags(ctx context.Context, userId string, tags []string) erro
 			return nil
 		}, nil)
 }
+
+func deleteOldTags(ctx context.Context) error {
+	return hystrix.DoC(ctx, hystrixDb,
+		func(ctx context.Context) error {
+			_, err := db.ExecContext(ctx, "DELETE FROM user_tags WHERE last_read < now() - interval 6 month")
+			if err != nil {
+				return err
+			}
+			return nil
+		}, nil)
+}

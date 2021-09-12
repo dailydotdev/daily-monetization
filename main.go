@@ -234,10 +234,12 @@ type App struct {
 
 type NewAdHandler struct{}
 type ViewEventHandler struct{}
+type DeleteOldTags struct{}
 type BackgroundApp struct {
 	HealthHandler    *HealthHandler
 	NewAdHandler     *NewAdHandler
 	ViewEventHandler *ViewEventHandler
+	DeleteOldTags    *DeleteOldTags
 }
 
 func (h *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -297,6 +299,9 @@ func (h *BackgroundApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	case "view":
 		h.ViewEventHandler.ServeHTTP(w, r)
+		return
+	case "delete-old-tags":
+		h.DeleteOldTags.ServeHTTP(w, r)
 		return
 	}
 
@@ -384,6 +389,21 @@ func (h *ViewEventHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Not Found", http.StatusNotFound)
 }
 
+func (h *DeleteOldTags) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		if r.URL.Path == "/" {
+			if err := deleteOldTags(r.Context()); err != nil {
+				log.Errorf("deleteOldTags %v", err)
+				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+				return
+			}
+			return
+		}
+	}
+
+	http.Error(w, "Not Found", http.StatusNotFound)
+}
+
 func (h *HealthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/" && r.Method == "GET" {
 		fmt.Fprintf(w, "OK")
@@ -405,6 +425,7 @@ func createBackgroundApp() *BackgroundApp {
 		HealthHandler:    new(HealthHandler),
 		NewAdHandler:     new(NewAdHandler),
 		ViewEventHandler: new(ViewEventHandler),
+		DeleteOldTags:    new(DeleteOldTags),
 	}
 }
 
