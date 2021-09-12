@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/stretchr/testify/assert"
+	"sort"
 	"testing"
 )
 
@@ -83,5 +84,6 @@ func TestGetUserTags(t *testing.T) {
 
 	tags, err := getUserTags(context.Background(), "1")
 	assert.Nil(t, err)
+	sort.Strings(tags)
 	assert.Equal(t, []string{"php", "webdev"}, tags)
 }
