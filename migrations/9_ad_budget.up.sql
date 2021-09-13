@@ -1,0 +1,2 @@
+ALTER TABLE `ads`
+    ADD COLUMN `budget` FLOAT UNSIGNED;
