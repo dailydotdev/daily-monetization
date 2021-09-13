@@ -1,0 +1,3 @@
+ALTER TABLE `ads`
+    ADD COLUMN `goal` INT UNSIGNED,
+    ADD COLUMN `price` FLOAT UNSIGNED;
