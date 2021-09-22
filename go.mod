@@ -8,7 +8,7 @@ require (
 	github.com/containerd/containerd v1.5.2 // indirect
 	github.com/docker/docker v20.10.7+incompatible // indirect
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/golang-migrate/migrate/v4 v4.14.1
+	github.com/golang-migrate/migrate/v4 v4.15.0
 	github.com/ip2location/ip2location-go v8.2.0+incompatible
 	github.com/moby/term v0.0.0-20201216013528-df9cb8a40635 // indirect
 	github.com/sirupsen/logrus v1.8.1
@@ -16,5 +16,5 @@ require (
 	github.com/stretchr/testify v1.7.0
 	go.opencensus.io v0.23.0
 	go.uber.org/automaxprocs v1.4.0
-	google.golang.org/api v0.47.1-0.20210606115602-23ee3382decc
+	google.golang.org/api v0.51.0
 )
