@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 )
 
@@ -20,9 +21,10 @@ var hystrixBsa = "BSA"
 
 func sendBsaRequest(r *http.Request, propertyId string) (BsaResponse, error) {
 	var res BsaResponse
+	ua := r.UserAgent()
 	ip := getIpAddress(r)
 	//ip = "208.98.185.89"
-	req, _ := http.NewRequest("GET", "https://srv.buysellads.com/ads/"+propertyId+".json?segment=placement:dailynowco&forwardedip="+ip, nil)
+	req, _ := http.NewRequest("GET", "https://srv.buysellads.com/ads/"+propertyId+".json?segment=placement:dailynowco&forwardedip="+ip+"&useragent="+url.QueryEscape(ua), nil)
 	req = req.WithContext(r.Context())
 
 	err := getJsonHystrix(hystrixBsa, req, &res, false)
