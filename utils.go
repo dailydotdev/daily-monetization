@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/afex/hystrix-go/hystrix"
+	log "github.com/sirupsen/logrus"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path"
@@ -33,7 +35,12 @@ func getJson(req *http.Request, target interface{}) error {
 
 		return json.NewDecoder(r.Body).Decode(target)
 	} else {
-		return errors.New(strconv.Itoa(r.StatusCode))
+		bodyBytes, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Warn("failed to parse error", err)
+		}
+		bodyString := string(bodyBytes)
+		return errors.New(strconv.Itoa(r.StatusCode) + ": " + bodyString)
 	}
 }
 
