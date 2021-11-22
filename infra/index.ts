@@ -29,6 +29,7 @@ const { serviceAccount } = createServiceAccountAndGrantRoles(
   [
     { name: 'trace', role: 'roles/cloudtrace.agent' },
     { name: 'secret', role: 'roles/secretmanager.secretAccessor' },
+    { name: 'subscriber', role: 'roles/pubsub.subscriber' },
   ],
 );
 
@@ -103,8 +104,6 @@ const bgService = createCloudRunService(
 export const serviceUrl = service.statuses[0].url;
 export const bgServiceUrl = bgService.statuses[0].url;
 
-const cloudRunPubSubInvoker = getCloudRunPubSubInvoker();
-
 const envVars = config.requireObject<Record<string, string>>('env');
 
 createKubernetesSecretFromRecord({
@@ -144,32 +143,20 @@ createAutoscaledExposedApplication({
 new gcp.pubsub.Subscription(`${name}-sub-views`, {
   topic: 'views',
   name: `${name}-views`,
-  pushConfig: {
-    pushEndpoint: bgServiceUrl.apply((url) => `${url}/view`),
-    oidcToken: {
-      serviceAccountEmail: cloudRunPubSubInvoker.email,
-    },
-  },
   labels: { app: name },
   retryPolicy: {
-    minimumBackoff: '10s',
-    maximumBackoff: '600s',
+    minimumBackoff: '1s',
+    maximumBackoff: '60s',
   },
 });
 
 new gcp.pubsub.Subscription(`${name}-sub-new-ad`, {
   topic: 'ad-image-processed',
   name: `${name}-new-ad`,
-  pushConfig: {
-    pushEndpoint: bgServiceUrl.apply((url) => `${url}/newAd`),
-    oidcToken: {
-      serviceAccountEmail: cloudRunPubSubInvoker.email,
-    },
-  },
   labels: { app: name },
   retryPolicy: {
-    minimumBackoff: '10s',
-    maximumBackoff: '600s',
+    minimumBackoff: '1s',
+    maximumBackoff: '60s',
   },
   expirationPolicy: {
     ttl: '',
