@@ -7,13 +7,14 @@ import {
   createK8sServiceAccountFromGCPServiceAccount,
   createMigrationJob,
   createServiceAccountAndGrantRoles,
-  getCloudRunPubSubInvoker,
   infra,
   k8sServiceAccountToIdentity,
-  createCronJobs,
   getImageTag,
   createKubernetesSecretFromRecord,
-  createAutoscaledExposedApplication, convertRecordToContainerEnvVars, getMemoryAndCpuMetrics,
+  createAutoscaledExposedApplication,
+  convertRecordToContainerEnvVars,
+  getMemoryAndCpuMetrics,
+  createAutoscaledApplication, getPubSubUndeliveredMessagesMetric, getFullSubscriptionLabel, createPubSubCronJobs,
 } from '@dailydotdev/pulumi-common';
 import { Input, Output } from '@pulumi/pulumi';
 
@@ -86,23 +87,7 @@ const service = createCloudRunService(
   },
 );
 
-const bgService = createCloudRunService(
-  `${name}-background`,
-  image,
-  secrets,
-  { cpu: '1', memory: '256Mi' },
-  vpcConnector,
-  serviceAccount,
-  {
-    dependsOn: [migrationJob],
-    access: CloudRunAccess.PubSub,
-    iamMemberName: `${name}-pubsub-invoker`,
-    args: ['background'],
-  },
-);
-
 export const serviceUrl = service.statuses[0].url;
-export const bgServiceUrl = bgService.statuses[0].url;
 
 const envVars = config.requireObject<Record<string, string>>('env');
 
@@ -112,6 +97,10 @@ createKubernetesSecretFromRecord({
   name,
   namespace,
 });
+
+const probe = {
+  httpGet: { path: '/health', port: 'http' },
+};
 
 createAutoscaledExposedApplication({
   name,
@@ -123,9 +112,8 @@ createAutoscaledExposedApplication({
       name: 'app',
       image,
       ports: [{ name: 'http', containerPort: 3000, protocol: 'TCP' }],
-      readinessProbe: {
-        httpGet: { path: '/health', port: 'http' },
-      },
+      readinessProbe: probe,
+      livenessProbe: probe,
       env: [
         ...convertRecordToContainerEnvVars({ secretName: name, data: envVars }),
         { name: 'PORT', value: '3000' },
@@ -139,6 +127,64 @@ createAutoscaledExposedApplication({
   maxReplicas: 10,
   metrics: getMemoryAndCpuMetrics(),
 });
+
+createAutoscaledApplication({
+  resourcePrefix: 'bg-',
+  name: `${name}-bg`,
+  namespace,
+  version: imageTag,
+  serviceAccount: k8sServiceAccount,
+  containers: [
+    {
+      name: 'app',
+      image,
+      args: ['/main', 'background'],
+      env: convertRecordToContainerEnvVars({ secretName: name, data: envVars }),
+      resources: {
+        requests: limits,
+        limits: limits,
+      },
+    },
+  ],
+  minReplicas: 1,
+  maxReplicas: 4,
+  metrics: [{
+    external: {
+      metric: {
+        name: getPubSubUndeliveredMessagesMetric(),
+        selector: {
+          matchLabels: {
+            [getFullSubscriptionLabel('app')]: name,
+          },
+        },
+      },
+      target: {
+        type: 'Value',
+        averageValue: '20',
+      },
+    },
+    type: 'External',
+  }],
+});
+
+const jobs = createPubSubCronJobs(name, [{
+  name: 'delete-old-tags',
+  schedule: '6 10 * * 0',
+  topic: 'delete-old-tags',
+}]);
+
+new gcp.pubsub.Subscription(`${name}-sub-delete-old-tags`, {
+  topic: 'delete-old-tags',
+  name: `${name}-delete-old-tags`,
+  labels: { app: name },
+  retryPolicy: {
+    minimumBackoff: '1s',
+    maximumBackoff: '60s',
+  },
+  expirationPolicy: {
+    ttl: '',
+  },
+}, { dependsOn: jobs });
 
 new gcp.pubsub.Subscription(`${name}-sub-views`, {
   topic: 'views',
@@ -162,8 +208,3 @@ new gcp.pubsub.Subscription(`${name}-sub-new-ad`, {
     ttl: '',
   },
 });
-
-createCronJobs(name, [{
-  name: 'delete-old-tags',
-  schedule: '6 10 * * 0',
-}], bgServiceUrl);
