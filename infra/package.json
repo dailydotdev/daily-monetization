@@ -4,8 +4,8 @@
         "@types/node": "^15.12.4"
     },
     "dependencies": {
-        "@dailydotdev/pulumi-common": "^1.0.3",
+        "@dailydotdev/pulumi-common": "^1.7.1",
         "@pulumi/gcp": "^5.9.0",
-        "@pulumi/pulumi": "^3.5.1"
+        "@pulumi/pulumi": "^3.18.0"
     }
 }

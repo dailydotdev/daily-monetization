@@ -1,6 +1,8 @@
 package main
 
 import (
+	"cloud.google.com/go/pubsub"
+	"context"
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"contrib.go.opencensus.io/exporter/stackdriver/propagation"
 	"encoding/json"
@@ -11,7 +13,6 @@ import (
 	"go.opencensus.io/trace"
 	_ "go.uber.org/automaxprocs"
 	"google.golang.org/api/option"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
@@ -28,6 +29,7 @@ var segmentToId map[string]string = map[string]string{
 	"crypto":     "CK7DT2QM",
 	"":           "CK7DT2QM",
 }
+var pubsubClient *pubsub.Client = nil
 
 func segmentToThresholds(segment string) float32 {
 	if segment == "devops" {
@@ -233,16 +235,6 @@ type App struct {
 	AdsHandler    *AdsHandler
 }
 
-type NewAdHandler struct{}
-type ViewEventHandler struct{}
-type DeleteOldTags struct{}
-type BackgroundApp struct {
-	HealthHandler    *HealthHandler
-	NewAdHandler     *NewAdHandler
-	ViewEventHandler *ViewEventHandler
-	DeleteOldTags    *DeleteOldTags
-}
-
 func (h *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var head string
 	head, r.URL.Path = shiftPath(r.URL.Path)
@@ -287,67 +279,15 @@ func (h *AdsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Not Found", http.StatusNotFound)
 }
 
-func (h *BackgroundApp) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	var head string
-	head, r.URL.Path = shiftPath(r.URL.Path)
-
-	switch head {
-	case "health":
-		h.HealthHandler.ServeHTTP(w, r)
-		return
-	case "newAd":
-		h.NewAdHandler.ServeHTTP(w, r)
-		return
-	case "view":
-		h.ViewEventHandler.ServeHTTP(w, r)
-		return
-	case "delete-old-tags":
-		h.DeleteOldTags.ServeHTTP(w, r)
-		return
+func NewAd(ctx context.Context, log *log.Entry, ad ScheduledCampaignAd) error {
+	log.Infof("[AD %s] adding new campaign ad", ad.Id)
+	if err := addCampaign(ctx, ad); err != nil {
+		log.WithField("ad", ad).Errorf("[AD %s] failed to add new campaign ad %v", ad.Id, err)
+		return err
 	}
 
-	http.Error(w, "Not Found", http.StatusNotFound)
-}
-
-func (h *NewAdHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		if r.URL.Path == "/" {
-			var msg PubSubMessage
-			body, err := ioutil.ReadAll(r.Body)
-			if err != nil {
-				log.Printf("ioutil.ReadAll: %v", err)
-				http.Error(w, "Bad Request", http.StatusBadRequest)
-				return
-			}
-			if err := json.Unmarshal(body, &msg); err != nil {
-				log.Printf("json.Unmarshal: %v", err)
-				http.Error(w, "Bad Request", http.StatusBadRequest)
-				return
-			}
-			var ad ScheduledCampaignAd
-			if err := json.Unmarshal(msg.Message.Data, &ad); err != nil {
-				log.Errorf("failed to decode message %v", err)
-				return
-			}
-
-			log.Infof("[AD %s] adding new campaign ad", ad.Id)
-			if err := addCampaign(r.Context(), ad); err != nil {
-				log.WithField("ad", ad).Errorf("[AD %s] failed to add new campaign ad %v", ad.Id, err)
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-
-			log.Infof("[AD %s] added new campaign ad", ad.Id)
-			return
-		}
-	}
-
-	http.Error(w, "Not Found", http.StatusNotFound)
-}
-
-type SegmentMessage struct {
-	UserId  string
-	Segment string
+	log.Infof("[AD %s] added new campaign ad", ad.Id)
+	return nil
 }
 
 type ViewMessage struct {
@@ -355,54 +295,22 @@ type ViewMessage struct {
 	Tags   []string
 }
 
-func (h *ViewEventHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		if r.URL.Path == "/" {
-			var msg PubSubMessage
-			body, err := ioutil.ReadAll(r.Body)
-			if err != nil {
-				log.Printf("ioutil.ReadAll: %v", err)
-				http.Error(w, "Bad Request", http.StatusBadRequest)
-				return
-			}
-			if err := json.Unmarshal(body, &msg); err != nil {
-				log.Printf("json.Unmarshal: %v", err)
-				http.Error(w, "Bad Request", http.StatusBadRequest)
-				return
-			}
-			var data ViewMessage
-			if err := json.Unmarshal(msg.Message.Data, &data); err != nil {
-				log.Errorf("failed to decode message %v", err)
-				return
-			}
-
-			if len(data.Tags) > 0 {
-				if err := addOrUpdateUserTags(r.Context(), data.UserId, data.Tags); err != nil {
-					log.WithField("view", data).Errorf("addOrUpdateUserTags %v", err)
-					http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-					return
-				}
-			}
-			return
+func View(ctx context.Context, log *log.Entry, data ViewMessage) error {
+	if len(data.Tags) > 0 {
+		if err := addOrUpdateUserTags(ctx, data.UserId, data.Tags); err != nil {
+			log.WithField("view", data).Errorf("addOrUpdateUserTags %v", err)
+			return err
 		}
 	}
-
-	http.Error(w, "Not Found", http.StatusNotFound)
+	return nil
 }
 
-func (h *DeleteOldTags) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		if r.URL.Path == "/" {
-			if err := deleteOldTags(r.Context()); err != nil {
-				log.Errorf("deleteOldTags %v", err)
-				http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-				return
-			}
-			return
-		}
+func DeleteOldTags(ctx context.Context, log *log.Entry) error {
+	if err := deleteOldTags(ctx); err != nil {
+		log.Errorf("deleteOldTags %v", err)
+		return err
 	}
-
-	http.Error(w, "Not Found", http.StatusNotFound)
+	return nil
 }
 
 func (h *HealthHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -421,13 +329,78 @@ func createApp() *App {
 	}
 }
 
-func createBackgroundApp() *BackgroundApp {
-	return &BackgroundApp{
-		HealthHandler:    new(HealthHandler),
-		NewAdHandler:     new(NewAdHandler),
-		ViewEventHandler: new(ViewEventHandler),
-		DeleteOldTags:    new(DeleteOldTags),
+func subscribeToNewAd() {
+	const sub = "monetization-new-ad"
+	log.Info("receiving messages from ", sub)
+	ctx := context.Background()
+	err := pubsubClient.Subscription(sub).Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
+		childLog := log.WithField("messageId", msg.ID)
+		var data ScheduledCampaignAd
+		if err := json.Unmarshal(msg.Data, &data); err != nil {
+			childLog.Errorf("failed to decode message %v", err)
+			msg.Ack()
+			return
+		}
+
+		if err := NewAd(ctx, childLog, data); err != nil {
+			msg.Nack()
+		} else {
+			msg.Ack()
+		}
+	})
+
+	if err != nil {
+		log.Fatal("failed to receive messages from pubsub ", err)
 	}
+}
+
+func subscribeToView() {
+	const sub = "monetization-views"
+	log.Info("receiving messages from ", sub)
+	ctx := context.Background()
+	err := pubsubClient.Subscription(sub).Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
+		childLog := log.WithField("messageId", msg.ID)
+		var data ViewMessage
+		if err := json.Unmarshal(msg.Data, &data); err != nil {
+			childLog.Errorf("failed to decode message %v", err)
+			msg.Ack()
+			return
+		}
+
+		if err := View(ctx, childLog, data); err != nil {
+			msg.Nack()
+		} else {
+			msg.Ack()
+		}
+	})
+
+	if err != nil {
+		log.Fatal("failed to receive messages from pubsub ", err)
+	}
+}
+
+func subscribeToDeleteOldTags() {
+	const sub = "monetization-delete-old-tags"
+	log.Info("receiving messages from ", sub)
+	ctx := context.Background()
+	err := pubsubClient.Subscription(sub).Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
+		childLog := log.WithField("messageId", msg.ID)
+		if err := DeleteOldTags(ctx, childLog); err != nil {
+			msg.Nack()
+		} else {
+			msg.Ack()
+		}
+	})
+
+	if err != nil {
+		log.Fatal("failed to receive messages from pubsub ", err)
+	}
+}
+
+func createBackgroundApp() {
+	go subscribeToNewAd()
+	go subscribeToView()
+	subscribeToDeleteOldTags()
 }
 
 func init() {
@@ -439,12 +412,15 @@ func init() {
 		gcpOpts = append(gcpOpts, option.WithCredentialsFile(file))
 	}
 
+	projectID := os.Getenv("GCLOUD_PROJECT")
+	ctx := context.Background()
+
 	log.SetOutput(os.Stdout)
 	if getEnv("ENV", "DEV") == "PROD" {
 		log.SetFormatter(&log.JSONFormatter{})
 
 		exporter, err := stackdriver.NewExporter(stackdriver.Options{
-			ProjectID:          os.Getenv("GCLOUD_PROJECT"),
+			ProjectID:          projectID,
 			TraceClientOptions: gcpOpts,
 		})
 		if err != nil {
@@ -462,6 +438,12 @@ func init() {
 	} else {
 		httpClient = &http.Client{}
 	}
+
+	var err error
+	pubsubClient, err = pubsub.NewClient(ctx, projectID, gcpOpts...)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func main() {
@@ -474,18 +456,17 @@ func main() {
 		initializeDatabase()
 		defer tearDatabase()
 
-		var app http.Handler
 		if len(os.Args) > 1 && os.Args[1] == "background" {
 			log.Info("background processing is on")
-			app = createBackgroundApp()
+			createBackgroundApp()
 		} else {
-			app = createApp()
-		}
-		addr := fmt.Sprintf(":%s", getEnv("PORT", "9090"))
-		log.Info("server is listening to ", addr)
-		err := http.ListenAndServe(addr, &ochttp.Handler{Handler: app, Propagation: &propagation.HTTPFormat{}}) // set listen addr
-		if err != nil {
-			log.Fatal("failed to start listening ", err)
+			app := createApp()
+			addr := fmt.Sprintf(":%s", getEnv("PORT", "9090"))
+			log.Info("server is listening to ", addr)
+			err := http.ListenAndServe(addr, &ochttp.Handler{Handler: app, Propagation: &propagation.HTTPFormat{}}) // set listen addr
+			if err != nil {
+				log.Fatal("failed to start listening ", err)
+			}
 		}
 	}
 }
