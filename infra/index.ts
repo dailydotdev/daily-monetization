@@ -1,13 +1,9 @@
 import * as gcp from '@pulumi/gcp';
 import {
-  CloudRunAccess,
   config,
-  createCloudRunService,
-  createEnvVarsFromSecret,
   createK8sServiceAccountFromGCPServiceAccount,
   createMigrationJob,
   createServiceAccountAndGrantRoles,
-  infra,
   k8sServiceAccountToIdentity,
   getImageTag,
   createKubernetesSecretFromRecord,
@@ -16,12 +12,10 @@ import {
   getMemoryAndCpuMetrics,
   createAutoscaledApplication, getPubSubUndeliveredMessagesMetric, getFullSubscriptionLabel, createPubSubCronJobs,
 } from '@dailydotdev/pulumi-common';
-import { Input, Output } from '@pulumi/pulumi';
+import { Input } from '@pulumi/pulumi';
 
 const imageTag = getImageTag();
 const name = 'monetization';
-
-const vpcConnector = infra.getOutput('serverlessVPC') as Output<gcp.vpcaccess.Connector>;
 
 const { serviceAccount } = createServiceAccountAndGrantRoles(
   `${name}-sa`,
@@ -34,12 +28,25 @@ const { serviceAccount } = createServiceAccountAndGrantRoles(
   ],
 );
 
-const secrets = createEnvVarsFromSecret(name);
+const { namespace } = config.requireObject<{ namespace: string }>('k8s');
+
+const envVars = config.requireObject<Record<string, string>>('env');
+
+const containerEnvVars = convertRecordToContainerEnvVars({
+  secretName: name,
+  data: envVars,
+});
+
+createKubernetesSecretFromRecord({
+  data: envVars,
+  resourceName: 'k8s-secret',
+  name,
+  namespace,
+});
 
 const image = `gcr.io/daily-ops/daily-${name}:${imageTag}`;
 
 // Create K8S service account and assign it to a GCP service account
-const { namespace } = config.requireObject<{ namespace: string }>('k8s');
 
 const k8sServiceAccount = createK8sServiceAccountFromGCPServiceAccount(
   `${name}-k8s-sa`,
@@ -59,7 +66,7 @@ const migrationJob = createMigrationJob(
   namespace,
   image,
   ['/main', 'migrate'],
-  secrets,
+  containerEnvVars,
   k8sServiceAccount,
 );
 
@@ -70,36 +77,9 @@ const limits: Input<{
   memory: '256Mi',
 };
 
-// Deploy to Cloud Run (foreground & background)
-const service = createCloudRunService(
-  name,
-  image,
-  secrets,
-  limits,
-  vpcConnector,
-  serviceAccount,
-  {
-    minScale: 1,
-    concurrency: 250,
-    dependsOn: [migrationJob],
-    access: CloudRunAccess.Public,
-    iamMemberName: `${name}-public`,
-  },
-);
-
-export const serviceUrl = service.statuses[0].url;
-
-const envVars = config.requireObject<Record<string, string>>('env');
-
-createKubernetesSecretFromRecord({
-  data: envVars,
-  resourceName: 'k8s-secret',
-  name,
-  namespace,
-});
-
 const probe = {
   httpGet: { path: '/health', port: 'http' },
+  initialDelaySeconds: 5,
 };
 
 createAutoscaledExposedApplication({
@@ -115,7 +95,7 @@ createAutoscaledExposedApplication({
       readinessProbe: probe,
       livenessProbe: probe,
       env: [
-        ...convertRecordToContainerEnvVars({ secretName: name, data: envVars }),
+        ...containerEnvVars,
         { name: 'PORT', value: '3000' },
       ],
       resources: {
@@ -126,6 +106,7 @@ createAutoscaledExposedApplication({
   ],
   maxReplicas: 10,
   metrics: getMemoryAndCpuMetrics(),
+  deploymentDependsOn: [migrationJob],
 });
 
 createAutoscaledApplication({
@@ -139,7 +120,7 @@ createAutoscaledApplication({
       name: 'app',
       image,
       args: ['/main', 'background'],
-      env: convertRecordToContainerEnvVars({ secretName: name, data: envVars }),
+      env: containerEnvVars,
       resources: {
         requests: limits,
         limits: limits,
@@ -165,6 +146,7 @@ createAutoscaledApplication({
     },
     type: 'External',
   }],
+  deploymentDependsOn: [migrationJob],
 });
 
 const jobs = createPubSubCronJobs(name, [{
