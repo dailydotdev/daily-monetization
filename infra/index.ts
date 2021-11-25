@@ -97,6 +97,7 @@ createAutoscaledExposedApplication({
       env: [
         ...containerEnvVars,
         { name: 'PORT', value: '3000' },
+        { name: 'ENV', value: 'PROD' },
       ],
       resources: {
         requests: limits,
