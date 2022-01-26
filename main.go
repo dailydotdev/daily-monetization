@@ -43,6 +43,8 @@ func getBsaAd(r *http.Request, country string, segment string) (*BsaAd, error) {
 	var err error
 	if country == "united states" {
 		bsa, err = fetchBsa(r, "CE7D5KJL")
+	} else if country == "united kingdom" {
+		bsa, err = fetchBsa(r, "CEAD62QI")
 	} else {
 		bsa, err = fetchBsa(r, segmentToId[segment])
 	}
