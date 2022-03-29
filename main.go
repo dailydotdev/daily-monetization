@@ -78,6 +78,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 			if prob <= camps[i].Probability {
 				camps[i].Probability = 0
 				camps[i].Geo = ""
+				camps[i].IsTagTargeted = false
 				res = []interface{}{camps[i]}
 				break
 			}
@@ -153,6 +154,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 				if prob <= camps[i].Probability {
 					camps[i].Probability = 0
 					camps[i].Geo = ""
+					camps[i].IsTagTargeted = false
 					res = []interface{}{camps[i]}
 					break
 				}

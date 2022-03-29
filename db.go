@@ -75,7 +75,13 @@ func initializeDatabase() {
 		log.Fatal("failed to open sql ", err)
 	}
 
-	campStmt, err = db.Prepare("select id, title, url, image, ratio, placeholder, source, company, probability, fallback, geo from ads left join (select ad_id, max(relevant) as relevant from (select ad_id, exists (select user_id from user_tags where user_tags.tag = ad_tags.tag and user_tags.user_id = ?) as relevant from ad_tags) as res group by ad_id) relevant_ads on ads.id = relevant_ads.ad_id where `start` <= ? and end > ? and (relevant_ads.relevant = 1 or relevant_ads.ad_id is null)")
+	campStmt, err = db.Prepare(`
+		select id, title, url, image, ratio, placeholder, source, company, probability, fallback, geo, relevant_ads.ad_id is not null as is_tag_targeted
+		from ads 
+		left join (select ad_id, max(relevant) as relevant 
+			from (select ad_id, exists (select user_id from user_tags where user_tags.tag = ad_tags.tag and user_tags.user_id = ?) as relevant from ad_tags) as res 
+			group by ad_id) relevant_ads on ads.id = relevant_ads.ad_id 
+		where start <= ? and end > ? and (relevant_ads.relevant = 1 or relevant_ads.ad_id is null)`)
 	if err != nil {
 		log.Fatal("failed to prepare query ", err)
 	}
