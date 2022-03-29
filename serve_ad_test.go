@@ -74,7 +74,7 @@ func TestFallbackCampaignAvailable(t *testing.T) {
 			Placeholder: "placholder",
 			Ratio:       0.5,
 			Id:          "id",
-			Fallback:    true,
+			Fallback:    false,
 		},
 	}, actual, "wrong body")
 	getUserTags = originalGetUserTags
@@ -276,7 +276,6 @@ func TestBsaFail(t *testing.T) {
 			Placeholder: "placholder",
 			Ratio:       0.5,
 			Id:          "id",
-			Fallback:    true,
 		},
 	}, actual, "wrong body")
 }

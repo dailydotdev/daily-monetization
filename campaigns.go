@@ -18,12 +18,13 @@ type Ad struct {
 
 type CampaignAd struct {
 	Ad
-	Id          string
-	Placeholder string
-	Ratio       float32
-	Probability float32 `json:",omitempty"`
-	Fallback    bool    `json:",omitempty"`
-	Geo         string  `json:",omitempty"`
+	Id            string
+	Placeholder   string
+	Ratio         float32
+	Probability   float32 `json:"-"`
+	Fallback      bool    `json:"-"`
+	Geo           string  `json:"-"`
+	IsTagTargeted bool    `json:"-"`
 }
 
 type ScheduledCampaignAd struct {
@@ -58,19 +59,27 @@ var fetchCampaigns = func(ctx context.Context, timestamp time.Time, userId strin
 			for rows.Next() {
 				var camp CampaignAd
 				var geo sql.NullString
-				err = rows.Scan(&camp.Id, &camp.Description, &camp.Link, &camp.Image, &camp.Ratio, &camp.Placeholder, &camp.Source, &camp.Company, &camp.Probability, &camp.Fallback, &geo)
+				err = rows.Scan(&camp.Id, &camp.Description, &camp.Link, &camp.Image, &camp.Ratio, &camp.Placeholder, &camp.Source, &camp.Company, &camp.Probability, &camp.Fallback, &geo, &camp.IsTagTargeted)
 				if err != nil {
 					return err
 				}
 				if geo.Valid {
 					camp.Geo = geo.String
 					if !camp.Fallback {
-						camp.ProviderId = "direct targeted"
+						if camp.IsTagTargeted {
+							camp.ProviderId = "direct-combined"
+						} else {
+							camp.ProviderId = "direct-geo"
+						}
 					}
 				} else {
 					camp.Geo = ""
 					if !camp.Fallback {
-						camp.ProviderId = "direct"
+						if camp.IsTagTargeted {
+							camp.ProviderId = "direct-keywords"
+						} else {
+							camp.ProviderId = "direct"
+						}
 					}
 				}
 				res = append(res, camp)

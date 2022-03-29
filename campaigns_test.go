@@ -100,6 +100,8 @@ func TestFetchCampaignsWithTags(t *testing.T) {
 
 	var res []CampaignAd
 	res, err = fetchCampaigns(context.Background(), time.Now(), "1")
+	dup := camp
+	dup.IsTagTargeted = true
 	assert.Nil(t, err)
-	assert.Equal(t, []CampaignAd{camp}, res)
+	assert.Equal(t, []CampaignAd{dup}, res)
 }
