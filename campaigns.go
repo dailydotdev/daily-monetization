@@ -63,7 +63,7 @@ var fetchCampaigns = func(ctx context.Context, timestamp time.Time, userId strin
 				if err != nil {
 					return err
 				}
-				if geo.Valid {
+				if geo.Valid && len(geo.String) > 0 {
 					camp.Geo = geo.String
 					if !camp.Fallback {
 						if camp.IsTagTargeted {
