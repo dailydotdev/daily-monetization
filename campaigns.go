@@ -21,10 +21,10 @@ type CampaignAd struct {
 	Id            string
 	Placeholder   string
 	Ratio         float32
-	Probability   float32 `json:",omitempty"`
-	Fallback      bool    `json:",omitempty"`
-	Geo           string  `json:",omitempty"`
-	IsTagTargeted bool    `json:",omitempty"`
+	Probability   float32 `json:"-"`
+	Fallback      bool    `json:"-"`
+	Geo           string  `json:"-"`
+	IsTagTargeted bool    `json:"-"`
 }
 
 type ScheduledCampaignAd struct {
