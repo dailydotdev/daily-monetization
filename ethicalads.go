@@ -35,7 +35,7 @@ var fetchEthicalAds = func(r *http.Request, keywords []string) (*EthicalAdsAd, e
 	}
 	ip := getIpAddress(r)
 	ua := r.UserAgent()
-	var body = []byte(`{ "publisher": "dailydev", "placements": [{ "div_id": "ad-div-1", "ad_type": "image-v1" }], "campaign_types": ["paid"], "user_ip": "` + ip + `", "user_ua": "` + ua + `" }`)
+	var body = []byte(`{ "publisher": "dailydev", "placements": [{ "div_id": "ad-div-1", "ad_type": "image-v1" }], "campaign_types": ["paid"], "user_ip": "` + ip + `", "user_ua": "` + ua + `", "keywords": [` + keywordsString + `] }`)
 	var res EthicalAdsResponse
 	req, _ := http.NewRequest("POST", "https://server.ethicalads.io/api/v1/decision/", bytes.NewBuffer(body))
 	req.Header.Set("Content-Type", "application/json")

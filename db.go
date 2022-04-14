@@ -95,7 +95,7 @@ func initializeDatabase() {
 		log.Fatal("failed to prepare query ", err)
 	}
 
-	getUserTagsStmt, err = db.Prepare("select tag from user_tags where user_id = ?")
+	getUserTagsStmt, err = db.Prepare("select tag from user_tags where user_id = ? order by last_read desc limit 50")
 	if err != nil {
 		log.Fatal("failed to prepare query ", err)
 	}
