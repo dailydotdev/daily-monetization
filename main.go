@@ -32,9 +32,9 @@ var segmentToId map[string]string = map[string]string{
 var pubsubClient *pubsub.Client = nil
 
 func segmentToThresholds(segment string) float32 {
-	if segment == "devops" {
-		return 1
-	}
+	//if segment == "devops" {
+	//	return 1
+	//}
 	return 0.2
 }
 
