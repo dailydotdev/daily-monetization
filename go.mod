@@ -3,6 +3,7 @@ module github.com/dailydotdev/daily-monetization
 go 1.16
 
 require (
+	cloud.google.com/go/iam v0.3.0 // indirect
 	cloud.google.com/go/kms v1.1.0 // indirect
 	cloud.google.com/go/monitoring v1.0.0 // indirect
 	cloud.google.com/go/pubsub v1.3.1
@@ -20,5 +21,5 @@ require (
 	github.com/stretchr/testify v1.7.0
 	go.opencensus.io v0.23.0
 	go.uber.org/automaxprocs v1.4.0
-	google.golang.org/api v0.58.0
+	google.golang.org/api v0.84.0
 )
