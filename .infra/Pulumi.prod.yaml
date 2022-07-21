@@ -8,6 +8,8 @@ config:
     ethicaladsToken:
       secure: AAABACL1XnobfoyPngc4Sd2Lhg9YopSpB7FjV1Y7WuWRDViV45a+6SXTYUI1B2VfrKcss/8M+TQ70Sue/0JJzPGulXWEPjAa
     gcloudProject: devkit-prod
+    migrationsSo:
+      secure: AAABAMtuRROMjs0KEBNmy6EOXEYm4gO6f6EeOH4FdwvwmydOXqE3GLGR33/wz/YhL7TqW+TPWCnNQAzUJXjO2Z4TLxCFUN3M0QqP7G7X3sS4OldC0xIEVMvzUyo0B7uETqYfwL0hrWdXM9z1W0C6X5T5DNNbXqxu/XiFE85qXPWk9ewETA==
     migrationsSource:
       secure: AAABADZk0aj8pxY5udGY5R+VLE8jLVG/+WKyM1wIq144lggO6kKMID7nEJdfdrq3bpKYeq2jHt4oUSUKMMR2tcMAlfw1HpLNqfw8iTDwb2/8mQOmqSKLVS6ISezYqq+lVYP8xqJ4f2EGFBqL4TtPT47qxxtPeTZw75g6zB3meqIHxtNsn0f3EQ==
   monetization:k8s:
