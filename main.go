@@ -38,10 +38,12 @@ func segmentToThresholds(segment string) float32 {
 	return 0.2
 }
 
-func getBsaAd(r *http.Request, country string, segment string) (*BsaAd, error) {
+func getBsaAd(r *http.Request, country string, segment string, active bool) (*BsaAd, error) {
 	var bsa *BsaAd
 	var err error
-	if country == "united states" {
+	if active {
+		bsa, err = fetchBsa(r, "CEAIP23E")
+	} else if country == "united states" {
 		bsa, err = fetchBsa(r, "CE7D5KJL")
 	} else if country == "united kingdom" {
 		bsa, err = fetchBsa(r, "CEAD62QI")
@@ -59,7 +61,8 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 
 	ip := getIpAddress(r)
 	country := getCountryByIP(ip)
-
+	active := r.URL.Query().Get("active") == "true"
+	log.Info(active)
 	var segment = ""
 	var userId string
 	cookie, _ := r.Cookie("da2")
@@ -110,14 +113,14 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		if res == nil {
-			bsa, _ := getBsaAd(r, country, segment)
+			bsa, _ := getBsaAd(r, country, segment, active)
 			if bsa != nil {
 				res = []interface{}{*bsa}
 			}
 		}
 	} else {
 		if res == nil {
-			bsa, _ := getBsaAd(r, country, segment)
+			bsa, _ := getBsaAd(r, country, segment, active)
 			if bsa != nil {
 				res = []interface{}{*bsa}
 			}
