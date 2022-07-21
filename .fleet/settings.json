@@ -1,0 +1,5 @@
+{
+    "go.root": "${env:GOROOT}",
+    "go.path": "${env:GOPATH}",
+    "go.modules": "true"
+}
