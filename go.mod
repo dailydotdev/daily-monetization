@@ -20,5 +20,5 @@ require (
 	github.com/stretchr/testify v1.7.0
 	go.opencensus.io v0.23.0
 	go.uber.org/automaxprocs v1.4.0
-	google.golang.org/api v0.58.0
+	google.golang.org/api v0.102.0
 )
