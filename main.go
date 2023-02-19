@@ -62,7 +62,6 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	ip := getIpAddress(r)
 	country := getCountryByIP(ip)
 	active := r.URL.Query().Get("active") == "true"
-	log.Info(active)
 	var segment = ""
 	var userId string
 	cookie, _ := r.Cookie("da2")
