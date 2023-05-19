@@ -31,14 +31,14 @@ const image = `gcr.io/daily-ops/daily-${name}:${imageTag}`;
 const apiLimits: Input<{
     [key: string]: Input<string>;
 }> = {
-    cpu: '1',
+    cpu: '500m',
     memory: '256Mi',
 };
 
 const bgLimits: Input<{
     [key: string]: Input<string>;
 }> = {
-    cpu: '500m',
+    cpu: '200m',
     memory: '256Mi',
 };
 
