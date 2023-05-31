@@ -31,15 +31,15 @@ const image = `gcr.io/daily-ops/daily-${name}:${imageTag}`;
 const apiLimits: Input<{
     [key: string]: Input<string>;
 }> = {
-    cpu: '500m',
-    memory: '256Mi',
+    cpu: '0.1',
+    memory: '96Mi',
 };
 
 const bgLimits: Input<{
     [key: string]: Input<string>;
 }> = {
-    cpu: '200m',
-    memory: '256Mi',
+    cpu: '0.2',
+    memory: '64Mi',
 };
 
 const probe = {
