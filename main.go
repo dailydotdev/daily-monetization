@@ -35,7 +35,7 @@ func segmentToThresholds(segment string) float32 {
 	//if segment == "devops" {
 	//	return 1
 	//}
-	return 0.15
+	return 0.2
 }
 
 func getBsaAd(r *http.Request, country string, segment string, active bool) (*BsaAd, error) {
