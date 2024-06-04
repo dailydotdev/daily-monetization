@@ -51,7 +51,10 @@ var fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
 			}
 			retAd.Image, _ = ad["smallImage"].(string)
 			retAd.Link, _ = ad["statlink"].(string)
-			retAd.Link = fmt.Sprintf("https:%s", retAd.Link)
+			// Prepend https: to the link if it's missing
+			if !strings.HasPrefix(retAd.Link, "https:") {
+				retAd.Link = fmt.Sprintf("https:%s", retAd.Link)
+			}
 			retAd.ReferralLink, _ = ad["ad_via_link"].(string)
 			retAd.Source = "Carbon"
 			retAd.Company = retAd.Source
