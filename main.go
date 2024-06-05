@@ -71,7 +71,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if country == "united states" {
-		bsa, _ := getBsaAd(r, country, segment, active)
+		bsa, _ := getBsaAd(r, country, segment, false)
 		if bsa != nil {
 			res = []interface{}{*bsa}
 		}
