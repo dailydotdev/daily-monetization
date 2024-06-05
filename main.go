@@ -68,20 +68,31 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	if cookie != nil {
 		userId = cookie.Value
 	}
+
+	if country == "united states" {
+		bsa, _ := getBsaAd(r, country, segment, active)
+		if bsa != nil {
+			res = []interface{}{*bsa}
+		}
+	}
+
 	camps, err := fetchCampaigns(r.Context(), time.Now(), userId)
 	if err != nil {
 		log.Warn("failed to fetch campaigns ", err)
 	}
 
-	// Look for a campaign ad based on probability
-	prob := rand.Float32()
-	for i := 0; i < len(camps); i++ {
-		if !camps[i].Fallback && (len(camps[i].Geo) == 0 || strings.Contains(camps[i].Geo, country)) {
-			if prob <= camps[i].Probability {
-				res = []interface{}{camps[i]}
-				break
+	if res == nil {
+
+		// Look for a campaign ad based on probability
+		prob := rand.Float32()
+		for i := 0; i < len(camps); i++ {
+			if !camps[i].Fallback && (len(camps[i].Geo) == 0 || strings.Contains(camps[i].Geo, country)) {
+				if prob <= camps[i].Probability {
+					res = []interface{}{camps[i]}
+					break
+				}
+				prob -= camps[i].Probability
 			}
-			prob -= camps[i].Probability
 		}
 	}
 
@@ -96,7 +107,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	prob = rand.Float32()
+	prob := rand.Float32()
 	threshold := segmentToThresholds(segment)
 	tags, err := getUserTags(r.Context(), userId)
 	if err != nil {
