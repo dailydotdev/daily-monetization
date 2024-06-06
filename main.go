@@ -44,8 +44,7 @@ func getBsaAd(r *http.Request, country string, segment string, active bool) (*Bs
 	if active {
 		bsa, err = fetchBsa(r, "CEAIP23E")
 	} else if country == "united states" {
-		//bsa, err = fetchBsa(r, "CE7D5KJL")
-		bsa, err = fetchBsa(r, "CK7DT2QM")
+		bsa, err = fetchBsa(r, "CE7D5KJL")
 	} else if country == "united kingdom" {
 		bsa, err = fetchBsa(r, "CEAD62QI")
 	} else {
@@ -58,6 +57,7 @@ func getBsaAd(r *http.Request, country string, segment string, active bool) (*Bs
 }
 
 func ServeAd(w http.ResponseWriter, r *http.Request) {
+	var err error
 	var res []interface{}
 
 	ip := getIpAddress(r)
@@ -71,18 +71,19 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if country == "united states" {
-		bsa, _ := getBsaAd(r, country, segment, false)
+		bsa, _ := fetchBsa(r, "CK7DT2QM")
 		if bsa != nil {
 			res = []interface{}{*bsa}
 		}
 	}
 
-	camps, err := fetchCampaigns(r.Context(), time.Now(), userId)
-	if err != nil {
-		log.Warn("failed to fetch campaigns ", err)
-	}
+	camps := make([]CampaignAd, 0)
 
 	if res == nil {
+		camps, err = fetchCampaigns(r.Context(), time.Now(), userId)
+		if err != nil {
+			log.Warn("failed to fetch campaigns ", err)
+		}
 
 		// Look for a campaign ad based on probability
 		prob := rand.Float32()
