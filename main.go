@@ -188,6 +188,31 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	w.Write(js)
 }
 
+func ServePostAd(w http.ResponseWriter, r *http.Request) {
+	var err error
+	var res []interface{}
+
+	bsa, _ := fetchBsa(r, "CWYDC2QE")
+	if bsa != nil {
+		res = []interface{}{*bsa}
+	}
+
+	if res == nil {
+		log.Info("no ads to serve for post page")
+		res = []interface{}{}
+	}
+
+	js, err := marshalJSON(res)
+	if err != nil {
+		log.Error("failed to marshal json ", err)
+		http.Error(w, "Server Internal Error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
 func ServeToilet(w http.ResponseWriter, r *http.Request) {
 	var res []interface{}
 
@@ -274,6 +299,11 @@ func (h *AdsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		if r.URL.Path == "/" {
 			ServeAd(w, r)
+			return
+		}
+
+		if r.URL.Path == "/post" {
+			ServePostAd(w, r)
 			return
 		}
 
