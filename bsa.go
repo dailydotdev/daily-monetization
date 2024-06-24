@@ -50,6 +50,9 @@ var fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
 				retAd.Description, _ = ad["title"].(string)
 			}
 			retAd.Image, _ = ad["smallImage"].(string)
+			if len(retAd.Image) == 0 {
+				retAd.Image, _ = ad["image"].(string)
+			}
 			retAd.Link, _ = ad["statlink"].(string)
 			// Prepend https: to the link if it's missing
 			if !strings.HasPrefix(retAd.Link, "https:") {
