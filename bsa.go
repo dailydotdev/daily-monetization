@@ -11,6 +11,7 @@ type BsaAd struct {
 	Ad
 	Pixel        []string
 	ReferralLink string
+	TagLine      string
 }
 
 type BsaResponse struct {
@@ -60,7 +61,11 @@ var fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
 			}
 			retAd.ReferralLink, _ = ad["ad_via_link"].(string)
 			retAd.Source = "Carbon"
-			retAd.Company = retAd.Source
+			retAd.Company, _ = ad["company"].(string)
+			if len(retAd.Company) == 0 {
+				retAd.Company = retAd.Source
+			}
+			retAd.TagLine, _ = ad["companyTagline"].(string)
 			retAd.ProviderId = "carbon"
 			if pixel, ok := ad["pixel"].(string); ok {
 				retAd.Pixel = strings.Split(pixel, "||")
