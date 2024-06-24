@@ -192,7 +192,7 @@ func ServePostAd(w http.ResponseWriter, r *http.Request) {
 	var err error
 	var res []interface{}
 
-	bsa, _ := fetchBsa(r, "CWYDC2QE")
+	bsa, _ := fetchBsa(r, "CW7D623L")
 	if bsa != nil {
 		res = []interface{}{*bsa}
 	}
