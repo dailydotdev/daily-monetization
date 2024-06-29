@@ -70,13 +70,6 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		userId = cookie.Value
 	}
 
-	if country == "united states" {
-		bsa, _ := fetchBsa(r, "CK7DT2QM")
-		if bsa != nil {
-			res = []interface{}{*bsa}
-		}
-	}
-
 	camps := make([]CampaignAd, 0)
 
 	if res == nil {
