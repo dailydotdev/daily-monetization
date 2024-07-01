@@ -44,7 +44,7 @@ func getBsaAd(r *http.Request, country string, segment string, active bool) (*Bs
 	if active {
 		bsa, err = fetchBsa(r, "CEAIP23E")
 	} else if country == "united states" {
-		bsa, err = fetchBsa(r, "CE7D5KJL")
+		bsa, err = fetchBsa(r, "CK7DT2QM")
 	} else if country == "united kingdom" {
 		bsa, err = fetchBsa(r, "CEAD62QI")
 	} else {
