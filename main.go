@@ -284,6 +284,7 @@ func (h *AdsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
 			w.Header().Set("Cache-Control", "max-age=86400")
 			w.Header().Set("Access-Control-Max-Age", "86400")
+			w.Header().Set("Vary", "Origin, Access-Control-Request-Headers")
 
 			accessHeaders := r.Header.Get("Access-Control-Request-Headers")
 
