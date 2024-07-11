@@ -1,23 +1,25 @@
 package main
 
 import (
-	"cloud.google.com/go/pubsub"
 	"context"
-	"contrib.go.opencensus.io/exporter/stackdriver"
-	"contrib.go.opencensus.io/exporter/stackdriver/propagation"
 	"encoding/json"
 	"fmt"
+	"math/rand"
+	"net/http"
+	"os"
+	"regexp"
+	"strings"
+	"time"
+
+	"cloud.google.com/go/pubsub"
+	"contrib.go.opencensus.io/exporter/stackdriver"
+	"contrib.go.opencensus.io/exporter/stackdriver/propagation"
 	"github.com/afex/hystrix-go/hystrix"
 	log "github.com/sirupsen/logrus"
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/trace"
 	_ "go.uber.org/automaxprocs"
 	"google.golang.org/api/option"
-	"math/rand"
-	"net/http"
-	"os"
-	"strings"
-	"time"
 )
 
 var gcpOpts []option.ClientOption
@@ -288,7 +290,31 @@ func (h *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Not Found", http.StatusNotFound)
 }
 
+var re = regexp.MustCompile(`^(?:https:\/\/)?(?:[\w-]+\.)*daily\.dev$`)
+
 func (h *AdsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		origin := r.Header.Get("Origin")
+
+		if re.MatchString(origin) {
+			w.Header().Set("Access-Control-Allow-Origin", origin)
+			w.Header().Set("Access-Control-Allow-Methods", "GET,HEAD,PUT,PATCH,POST,DELETE")
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+			w.Header().Set("Cache-Control", "max-age=86400")
+			w.Header().Set("Access-Control-Max-Age", "86400")
+
+			accessHeaders := r.Header.Get("Access-Control-Request-Headers")
+
+			if accessHeaders != "" {
+				w.Header().Set("Access-Control-Allow-Headers", accessHeaders)
+			}
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+
+		return
+	}
+
 	if r.Method == "GET" {
 		if r.URL.Path == "/" {
 			ServeAd(w, r)
