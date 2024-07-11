@@ -275,22 +275,23 @@ func (h *App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 var re = regexp.MustCompile(`^(?:https:\/\/)?(?:[\w-]+\.)*daily\.dev$`)
 
 func (h *AdsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	origin := r.Header.Get("Origin")
+	w.Header().Set("Vary", "Origin,Access-Control-Request-Headers")
+
+	if re.MatchString(origin) {
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+	}
+
 	if r.Method == "OPTIONS" {
-		origin := r.Header.Get("Origin")
+		w.Header().Set("Access-Control-Allow-Methods", "GET,HEAD,PUT,PATCH,POST,DELETE")
+		w.Header().Set("Cache-Control", "max-age=86400")
+		w.Header().Set("Access-Control-Max-Age", "86400")
 
-		if re.MatchString(origin) {
-			w.Header().Set("Access-Control-Allow-Origin", origin)
-			w.Header().Set("Access-Control-Allow-Methods", "GET,HEAD,PUT,PATCH,POST,DELETE")
-			w.Header().Set("Access-Control-Allow-Credentials", "true")
-			w.Header().Set("Cache-Control", "max-age=86400")
-			w.Header().Set("Access-Control-Max-Age", "86400")
-			w.Header().Set("Vary", "Origin, Access-Control-Request-Headers")
+		accessHeaders := r.Header.Get("Access-Control-Request-Headers")
 
-			accessHeaders := r.Header.Get("Access-Control-Request-Headers")
-
-			if accessHeaders != "" {
-				w.Header().Set("Access-Control-Allow-Headers", accessHeaders)
-			}
+		if accessHeaders != "" {
+			w.Header().Set("Access-Control-Allow-Headers", accessHeaders)
 		}
 
 		w.WriteHeader(http.StatusNoContent)
