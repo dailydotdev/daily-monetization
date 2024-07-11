@@ -104,41 +104,23 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	prob := rand.Float32()
-	threshold := segmentToThresholds(segment)
-	tags, err := getUserTags(r.Context(), userId)
-	if err != nil {
-		log.Warnln("getUserTags", err)
+	if res == nil {
+		bsa, _ := getBsaAd(r, country, segment, active)
+		if bsa != nil {
+			res = []interface{}{*bsa}
+		}
 	}
-	if prob < threshold {
-		if res == nil {
-			cf, err := fetchEthicalAds(r, tags)
-			if err != nil {
-				log.Warn("failed to fetch ad from EthicalAds ", err)
-			} else if cf != nil {
-				res = []interface{}{*cf}
-			}
+	if res == nil {
+		tags, err := getUserTags(r.Context(), userId)
+		if err != nil {
+			log.Warnln("getUserTags", err)
 		}
-		if res == nil {
-			bsa, _ := getBsaAd(r, country, segment, active)
-			if bsa != nil {
-				res = []interface{}{*bsa}
-			}
-		}
-	} else {
-		if res == nil {
-			bsa, _ := getBsaAd(r, country, segment, active)
-			if bsa != nil {
-				res = []interface{}{*bsa}
-			}
-		}
-		if res == nil {
-			cf, err := fetchEthicalAds(r, tags)
-			if err != nil {
-				log.Warn("failed to fetch ad from EthicalAds ", err)
-			} else if cf != nil {
-				res = []interface{}{*cf}
-			}
+
+		cf, err := fetchEthicalAds(r, tags)
+		if err != nil {
+			log.Warn("failed to fetch ad from EthicalAds ", err)
+		} else if cf != nil {
+			res = []interface{}{*cf}
 		}
 	}
 
