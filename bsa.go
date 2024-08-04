@@ -9,9 +9,10 @@ import (
 
 type BsaAd struct {
 	Ad
-	Pixel        []string
-	ReferralLink string
-	TagLine      string
+	Pixel           []string
+	ReferralLink    string
+	TagLine         string
+	BackgroundColor string
 }
 
 type BsaResponse struct {
@@ -66,6 +67,7 @@ var fetchBsa = func(r *http.Request, propertyId string) (*BsaAd, error) {
 				retAd.Company = retAd.Source
 			}
 			retAd.TagLine, _ = ad["companyTagline"].(string)
+			retAd.BackgroundColor, _ = ad["backgroundColor"].(string)
 			retAd.ProviderId = "carbon"
 			if pixel, ok := ad["pixel"].(string); ok {
 				retAd.Pixel = strings.Split(pixel, "||")
