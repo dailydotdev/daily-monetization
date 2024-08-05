@@ -450,9 +450,9 @@ func createBackgroundApp() {
 }
 
 func init() {
-	hystrix.ConfigureCommand(hystrixDb, hystrix.CommandConfig{Timeout: 300, MaxConcurrentRequests: 100})
-	hystrix.ConfigureCommand(hystrixBsa, hystrix.CommandConfig{Timeout: 700, MaxConcurrentRequests: 100})
-	hystrix.ConfigureCommand(hystrixEa, hystrix.CommandConfig{Timeout: 700, MaxConcurrentRequests: 100})
+	hystrix.ConfigureCommand(hystrixDb, hystrix.CommandConfig{Timeout: 300, MaxConcurrentRequests: 1000, SleepWindow: 1000, RequestVolumeThreshold: 100})
+	hystrix.ConfigureCommand(hystrixBsa, hystrix.CommandConfig{Timeout: 700, MaxConcurrentRequests: 1000, SleepWindow: 1000, RequestVolumeThreshold: 100})
+	hystrix.ConfigureCommand(hystrixEa, hystrix.CommandConfig{Timeout: 700, MaxConcurrentRequests: 1000, SleepWindow: 1000, RequestVolumeThreshold: 100})
 
 	if file, ok := os.LookupEnv("GOOGLE_APPLICATION_CREDENTIALS"); ok {
 		gcpOpts = append(gcpOpts, option.WithCredentialsFile(file))
