@@ -24,33 +24,51 @@ import (
 
 var gcpOpts []option.ClientOption
 var segmentToId map[string]string = map[string]string{
-	"frontend":   "CE7I5K3Y",
-	"backend":    "CE7I5K37",
-	"devops":     "CE7I5KQE",
-	"kubernetes": "CE7I5KQE",
-	"crypto":     "CK7DT2QM",
-	"":           "CK7DT2QM",
+	"python": "CW7D52QL",
 }
 var pubsubClient *pubsub.Client = nil
 
-func segmentToThresholds(segment string) float32 {
-	//if segment == "devops" {
-	//	return 1
-	//}
-	return 0.2
+var pythonTags = []string{"django", "fastapi", "flask", "jupyter", "keras", "matplotlib", "numpy", "pandas", "pip", "plotly", "pyspark", "python", "pytorch", "scikit", "selenium", "tensorflow"}
+
+func hasIntersection(a, b []string) bool {
+	seen := make(map[string]struct{})
+	for _, v := range a {
+		seen[v] = struct{}{}
+	}
+
+	for _, v := range b {
+		if _, exists := seen[v]; exists {
+			return true
+		}
+	}
+
+	return false
 }
 
-func getBsaAd(r *http.Request, country string, segment string, active bool) (*BsaAd, error) {
+func tagsToSegments(tags []string) string {
+	if hasIntersection(pythonTags, tags) {
+		return "python"
+	}
+
+	return ""
+}
+
+func getBsaAd(r *http.Request, country string, tags []string, active bool) (*BsaAd, error) {
 	var bsa *BsaAd
 	var err error
-	if active {
+
+	segment := tagsToSegments(tags)
+	propertyId, exists := segmentToId[segment]
+	if exists {
+		bsa, err = fetchBsa(r, propertyId)
+	} else if active {
 		bsa, err = fetchBsa(r, "CEAIP23E")
 	} else if country == "united states" {
 		bsa, err = fetchBsa(r, "CK7DT2QM")
 	} else if country == "united kingdom" {
 		bsa, err = fetchBsa(r, "CEAD62QI")
 	} else {
-		bsa, err = fetchBsa(r, segmentToId[segment])
+		bsa, err = fetchBsa(r, "CK7DT2QM")
 	}
 	if err != nil {
 		log.Warn("failed to fetch ad from BSA ", err)
@@ -65,7 +83,6 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	ip := getIpAddress(r)
 	country := getCountryByIP(ip)
 	active := r.URL.Query().Get("active") == "true"
-	var segment = ""
 	var userId string
 	cookie, _ := r.Cookie("da2")
 	if cookie != nil {
@@ -104,18 +121,18 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	tags, err := getUserTags(r.Context(), userId)
+	if err != nil {
+		log.Warnln("getUserTags", err)
+	}
+
 	if res == nil {
-		bsa, _ := getBsaAd(r, country, segment, active)
+		bsa, _ := getBsaAd(r, country, tags, active)
 		if bsa != nil {
 			res = []interface{}{*bsa}
 		}
 	}
 	if res == nil {
-		tags, err := getUserTags(r.Context(), userId)
-		if err != nil {
-			log.Warnln("getUserTags", err)
-		}
-
 		cf, err := fetchEthicalAds(r, tags)
 		if err != nil {
 			log.Warn("failed to fetch ad from EthicalAds ", err)
