@@ -23,12 +23,24 @@ import (
 )
 
 var gcpOpts []option.ClientOption
-var segmentToId map[string]string = map[string]string{
-	"python": "CW7D52QL",
+var segmentToId = map[string]string{
+	"python":       "CW7D52QL",
+	"design-tools": "CW7DEK3M",
 }
 var pubsubClient *pubsub.Client = nil
 
 var pythonTags = []string{"django", "fastapi", "flask", "jupyter", "keras", "matplotlib", "numpy", "pandas", "pip", "plotly", "pyspark", "python", "pytorch", "scikit", "selenium", "tensorflow"}
+var designToolsTags = []string{
+	"design-patterns",
+	"design-tools",
+	"design-systems",
+	"self-hosting",
+	"ui-ux",
+	"accessibility",
+	"figma",
+	"data-visualization",
+	"ecommerce",
+}
 
 func hasIntersection(a, b []string) bool {
 	seen := make(map[string]struct{})
@@ -48,6 +60,10 @@ func hasIntersection(a, b []string) bool {
 func tagsToSegments(tags []string) string {
 	if hasIntersection(pythonTags, tags) {
 		return "python"
+	}
+
+	if hasIntersection(designToolsTags, tags) {
+		return "design-tools"
 	}
 
 	return ""
