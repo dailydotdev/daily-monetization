@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"github.com/afex/hystrix-go/hystrix"
+	"regexp"
 	"time"
 )
 
@@ -31,6 +32,12 @@ type ScheduledCampaignAd struct {
 	CampaignAd
 	Start time.Time
 	End   time.Time
+}
+
+var cloudinaryRegex = regexp.MustCompile(`(?:res\.cloudinary\.com\/daily-now|daily-now-res\.cloudinary\.com)`)
+
+func mapCloudinaryUrl(url string) string {
+	return cloudinaryRegex.ReplaceAllString(url, "media.daily.dev")
 }
 
 var addCampaign = func(ctx context.Context, camp ScheduledCampaignAd) error {
@@ -63,6 +70,7 @@ var fetchCampaigns = func(ctx context.Context, timestamp time.Time, userId strin
 				if err != nil {
 					return err
 				}
+				camp.Image = mapCloudinaryUrl(camp.Image)
 				if geo.Valid && len(geo.String) > 0 {
 					camp.Geo = geo.String
 					if !camp.Fallback {
