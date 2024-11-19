@@ -10,6 +10,7 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/github"
 	log "github.com/sirupsen/logrus"
 	"os"
+	"time"
 )
 
 var dbConnString = os.Getenv("DB_CONNECTION_STRING")
@@ -23,7 +24,16 @@ var addCampStmt *sql.Stmt
 var getUserTagsStmt *sql.Stmt
 
 func openDatabaseConnection() (*sql.DB, error) {
-	return sql.Open("mysql", dbConnString+"?charset=utf8mb4,utf8")
+	conn, err := sql.Open("mysql", dbConnString+"?charset=utf8mb4,utf8")
+	if err != nil {
+		return nil, err
+	}
+
+	conn.SetConnMaxLifetime(time.Minute * 3)
+	conn.SetMaxOpenConns(20)
+	conn.SetMaxIdleConns(20)
+
+	return conn, nil
 }
 
 func newMigrate() (*migrate.Migrate, error) {
