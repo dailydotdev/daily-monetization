@@ -30,9 +30,10 @@ func getJson(req *http.Request, target interface{}) error {
 	if err != nil {
 		return err
 	}
-	if r.StatusCode == http.StatusOK {
-		defer r.Body.Close()
 
+	defer r.Body.Close()
+
+	if r.StatusCode == http.StatusOK {
 		return json.NewDecoder(r.Body).Decode(target)
 	} else {
 		bodyBytes, err := io.ReadAll(r.Body)
