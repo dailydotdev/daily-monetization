@@ -195,7 +195,7 @@ func ServeAd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	_, _ = w.Write(js)
 }
 
 func ServePostAd(w http.ResponseWriter, r *http.Request) {
@@ -220,7 +220,7 @@ func ServePostAd(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	_, _ = w.Write(js)
 }
 
 func ServeToilet(w http.ResponseWriter, r *http.Request) {
@@ -246,7 +246,7 @@ func ServeToilet(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	_, _ = w.Write(js)
 }
 
 func ServeBsa(w http.ResponseWriter, r *http.Request) {
@@ -265,7 +265,7 @@ func ServeBsa(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	_, _ = w.Write(js)
 }
 
 type PubSubMessage struct {

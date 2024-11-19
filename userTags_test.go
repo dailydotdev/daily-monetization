@@ -70,7 +70,7 @@ func TestDeleteOldUserTags(t *testing.T) {
 	defer rows.Close()
 	rows.Next()
 	var count int
-	rows.Scan(&count)
+	assert.NoError(t, rows.Scan(&count))
 	assert.Equal(t, 2, count)
 }
 

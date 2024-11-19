@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 var ad = Ad{
@@ -67,7 +68,7 @@ func TestFallbackCampaignAvailable(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
 
 	var actual []CampaignAd
-	json.NewDecoder(rr.Body).Decode(&actual)
+	assert.NoError(t, json.NewDecoder(rr.Body).Decode(&actual))
 	assert.Equal(t, []CampaignAd{
 		{
 			Ad:          ad,
@@ -96,7 +97,7 @@ func TestFallbackCampaignNotAvailable(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
 
 	var actual []interface{}
-	json.NewDecoder(rr.Body).Decode(&actual)
+	assert.NoError(t, json.NewDecoder(rr.Body).Decode(&actual))
 	assert.Equal(t, []interface{}{}, actual, "wrong body")
 }
 
@@ -119,7 +120,7 @@ func TestCampaignFail(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
 
 	var actual []interface{}
-	json.NewDecoder(rr.Body).Decode(&actual)
+	assert.NoError(t, json.NewDecoder(rr.Body).Decode(&actual))
 	assert.Equal(t, []interface{}{}, actual, "wrong body")
 }
 
@@ -152,7 +153,7 @@ func TestCampaignAvailable(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
 
 	var actual []CampaignAd
-	json.NewDecoder(rr.Body).Decode(&actual)
+	assert.NoError(t, json.NewDecoder(rr.Body).Decode(&actual))
 	assert.Equal(t, []CampaignAd{
 		{
 			Ad:          ad,
@@ -196,7 +197,7 @@ func TestCampaignAvailableByGeo(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
 
 	var actual []CampaignAd
-	json.NewDecoder(rr.Body).Decode(&actual)
+	assert.NoError(t, json.NewDecoder(rr.Body).Decode(&actual))
 	assert.Equal(t, []CampaignAd{
 		{
 			Ad:          ad,
@@ -233,7 +234,7 @@ func TestBsaAvailable(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
 
 	var actual []BsaAd
-	json.NewDecoder(rr.Body).Decode(&actual)
+	assert.NoError(t, json.NewDecoder(rr.Body).Decode(&actual))
 	assert.Equal(t, exp, actual, "wrong body")
 }
 
@@ -269,7 +270,7 @@ func TestBsaFail(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rr.Code, "wrong status code")
 
 	var actual []CampaignAd
-	json.NewDecoder(rr.Body).Decode(&actual)
+	assert.NoError(t, json.NewDecoder(rr.Body).Decode(&actual))
 	assert.Equal(t, []CampaignAd{
 		{
 			Ad:          ad,
