@@ -6,7 +6,7 @@ orbs:
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.16
+      - image: cimg/go:1.22
       - image: mysql:5.7
         environment:
           MYSQL_DATABASE: test
@@ -16,21 +16,12 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "go.sum" }}
       - run:
-          name: Install dependencies
-          command: go install .
-          environment:
-            PROJECT_ROOT: $CIRCLE_PROJECT_REPONAME
-      - run:
           name: Build
-          command: go build -a -installsuffix cgo -o main
+          command: go build -o main
           environment:
             PROJECT_ROOT: $CIRCLE_PROJECT_REPONAME
             CGO_ENABLED: 0
             GOOS: linux
-      - save_cache:
-          key: dependency-cache-{{ checksum "go.sum" }}
-          paths:
-            - /go/pkg/mod
       - run:
           name: Wait for MySQL
           command: |
