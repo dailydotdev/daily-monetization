@@ -25,6 +25,10 @@ contrib.go.opencensus.io/exporter/stackdriver/monitoredresource
 contrib.go.opencensus.io/exporter/stackdriver/monitoredresource/aws
 contrib.go.opencensus.io/exporter/stackdriver/monitoredresource/gcp
 contrib.go.opencensus.io/exporter/stackdriver/propagation
+# filippo.io/edwards25519 v1.1.0
+## explicit; go 1.20
+filippo.io/edwards25519
+filippo.io/edwards25519/field
 # github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 ## explicit
 github.com/afex/hystrix-go/hystrix
@@ -84,8 +88,8 @@ github.com/census-instrumentation/opencensus-proto/gen-go/resource/v1
 github.com/davecgh/go-spew/spew
 # github.com/docker/docker v20.10.7+incompatible
 ## explicit
-# github.com/go-sql-driver/mysql v1.6.0
-## explicit; go 1.10
+# github.com/go-sql-driver/mysql v1.8.1
+## explicit; go 1.18
 github.com/go-sql-driver/mysql
 # github.com/golang-migrate/migrate/v4 v4.15.0
 ## explicit; go 1.16

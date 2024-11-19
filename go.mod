@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/pubsub v1.3.1
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.8
 	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
-	github.com/go-sql-driver/mysql v1.6.0
+	github.com/go-sql-driver/mysql v1.8.1
 	github.com/golang-migrate/migrate/v4 v4.15.0
 	github.com/ip2location/ip2location-go v8.2.0+incompatible
 	github.com/sirupsen/logrus v1.8.1
@@ -21,6 +21,7 @@ require (
 	cloud.google.com/go/kms v1.1.0 // indirect
 	cloud.google.com/go/monitoring v1.0.0 // indirect
 	cloud.google.com/go/trace v1.0.0 // indirect
+	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/aws/aws-sdk-go v1.37.0 // indirect
 	github.com/census-instrumentation/opencensus-proto v0.3.0 // indirect
 	github.com/containerd/containerd v1.5.2 // indirect
