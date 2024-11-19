@@ -1,7 +1,7 @@
 version: 2.1
 orbs:
-  gcp-gcr: circleci/gcp-gcr@0.15.0
-  gcp-cli: circleci/gcp-cli@2.4.1
+  gcp-gcr: circleci/gcp-gcr@0.16.2
+  gcp-cli: circleci/gcp-cli@3.1.1
   pulumi: pulumi/pulumi@2.0.0
 jobs:
   build:
@@ -84,7 +84,7 @@ jobs:
     steps:
       - checkout
       - gcp-cli/install
-      - gcp-cli/initialize
+      - gcp-cli/setup
       - run:
           name: Install GKE Auth plugin
           command: gcloud components install gke-gcloud-auth-plugin
