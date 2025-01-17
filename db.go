@@ -119,13 +119,13 @@ func initializeDatabase() {
                     group by ad_id) exp_relevant_ads on ads.id = exp_relevant_ads.ad_id
 		where start <= ? and end > ? and 
 		      (
-      			(tag_relevant_ads.relevant = 1 and exp_relevant_ads.ad_id = 1)
+      			(tag_relevant_ads.relevant = 1 and exp_relevant_ads.relevant = 1)
     			or
-       			(tag_relevant_ads.relevant is null and exp_relevant_ads.ad_id is null)
+       			(tag_relevant_ads.relevant is null and exp_relevant_ads.relevant is null)
     			or
-       			(tag_relevant_ads.relevant = 1 and exp_relevant_ads.ad_id is null)
+       			(tag_relevant_ads.relevant = 1 and exp_relevant_ads.relevant is null)
     			or
-       			(tag_relevant_ads.relevant is null and exp_relevant_ads.ad_id = 1)
+       			(tag_relevant_ads.relevant is null and exp_relevant_ads.relevant = 1)
     		  )`)
 	if err != nil {
 		log.Fatal("failed to prepare query ", err)
