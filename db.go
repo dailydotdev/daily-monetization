@@ -87,12 +87,46 @@ func initializeDatabase() {
 	}
 
 	campStmt, err = db.Prepare(`
-		select id, title, url, image, ratio, placeholder, source, company, probability, fallback, geo, relevant_ads.ad_id is not null as is_tag_targeted
-		from ads 
-		left join (select ad_id, max(relevant) as relevant 
-			from (select ad_id, exists (select user_id from user_tags where user_tags.tag = ad_tags.tag and user_tags.user_id = ?) as relevant from ad_tags) as res 
-			group by ad_id) relevant_ads on ads.id = relevant_ads.ad_id 
-		where start <= ? and end > ? and (relevant_ads.relevant = 1 or relevant_ads.ad_id is null)`)
+		select id,
+		   title,
+		   url,
+		   image,
+		   ratio,
+		   placeholder,
+		   source,
+		   company,
+		   probability,
+		   fallback,
+		   geo,
+		   tag_relevant_ads.ad_id is not null as is_tag_targeted,
+		   exp_relevant_ads.ad_id is not null as is_exp_targeted
+		from ads
+         	left join (select ad_id, max(relevant) as relevant  
+                    from (select ad_id,
+                                 exists (select user_id
+                                         from user_tags
+                                         where user_tags.tag = ad_tags.tag
+                                           and user_tags.user_id = ?) as relevant
+                          from ad_tags) as res
+                    group by ad_id) tag_relevant_ads on ads.id = tag_relevant_ads.ad_id
+         	left join (select ad_id, max(relevant) as relevant
+                    from (select ad_id,
+                                 exists (select user_id
+                                         from user_experience_levels
+                                         where user_experience_levels.experience_level = ad_experience_level.experience_level
+                                           and user_experience_levels.user_id = ?) as relevant
+                          from ad_experience_level) as res
+                    group by ad_id) exp_relevant_ads on ads.id = exp_relevant_ads.ad_id
+		where start <= ? and end > ? and 
+		      (
+      			(tag_relevant_ads.relevant = 1 and exp_relevant_ads.ad_id = 1)
+    			or
+       			(tag_relevant_ads.relevant is null and exp_relevant_ads.ad_id is null)
+    			or
+       			(tag_relevant_ads.relevant = 1 and exp_relevant_ads.ad_id is null)
+    			or
+       			(tag_relevant_ads.relevant is null and exp_relevant_ads.ad_id = 1)
+    		  )`)
 	if err != nil {
 		log.Fatal("failed to prepare query ", err)
 	}

@@ -77,37 +77,37 @@ new gcp.pubsub.Subscription(`${name}-sub-views`, {
 });
 
 // api.v1.user-created
-// new gcp.pubsub.Subscription(`${name}-sub-user-created`, {
-//     topic: 'api.v1.user-created',
-//     name: `${name}-user-created`,
-//     labels: {app: name},
-//     retryPolicy: {
-//         minimumBackoff: '1s',
-//         maximumBackoff: '60s',
-//     },
-// });
+new gcp.pubsub.Subscription(`${name}-sub-user-created`, {
+    topic: 'api.v1.user-created',
+    name: `${name}-user-created`,
+    labels: {app: name},
+    retryPolicy: {
+        minimumBackoff: '1s',
+        maximumBackoff: '60s',
+    },
+});
 
 // user-updated
-// new gcp.pubsub.Subscription(`${name}-sub-user-updated`, {
-//     topic: 'user-updated',
-//     name: `${name}-user-updated`,
-//     labels: {app: name},
-//     retryPolicy: {
-//         minimumBackoff: '1s',
-//         maximumBackoff: '60s',
-//     },
-// });
+new gcp.pubsub.Subscription(`${name}-sub-user-updated`, {
+    topic: 'user-updated',
+    name: `${name}-user-updated`,
+    labels: {app: name},
+    retryPolicy: {
+        minimumBackoff: '1s',
+        maximumBackoff: '60s',
+    },
+});
 
 // user-updated
-// new gcp.pubsub.Subscription(`${name}-sub-user-deleted`, {
-//     topic: 'user-deleted',
-//     name: `${name}-user-deleted`,
-//     labels: {app: name},
-//     retryPolicy: {
-//         minimumBackoff: '1s',
- //         maximumBackoff: '60s',
-//     },
-// });
+new gcp.pubsub.Subscription(`${name}-sub-user-deleted`, {
+    topic: 'user-deleted',
+    name: `${name}-user-deleted`,
+    labels: {app: name},
+    retryPolicy: {
+        minimumBackoff: '1s',
+         maximumBackoff: '60s',
+    },
+});
 
 //
 new gcp.pubsub.Subscription(`${name}-sub-new-ad`, {

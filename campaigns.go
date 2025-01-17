@@ -3,9 +3,10 @@ package main
 import (
 	"context"
 	"database/sql"
-	"github.com/afex/hystrix-go/hystrix"
 	"regexp"
 	"time"
+
+	"github.com/afex/hystrix-go/hystrix"
 )
 
 type Ad struct {
@@ -26,6 +27,7 @@ type CampaignAd struct {
 	Fallback      bool    `json:"-"`
 	Geo           string  `json:"-"`
 	IsTagTargeted bool    `json:"-"`
+	IsExpTargeted bool    `json:"-"`
 }
 
 type ScheduledCampaignAd struct {
@@ -56,7 +58,7 @@ var fetchCampaigns = func(ctx context.Context, timestamp time.Time, userId strin
 	output := make(chan []CampaignAd, 1)
 	errors := hystrix.GoC(ctx, hystrixDb,
 		func(ctx context.Context) error {
-			rows, err := campStmt.QueryContext(ctx, userId, timestamp, timestamp)
+			rows, err := campStmt.QueryContext(ctx, userId, userId, timestamp, timestamp)
 			if err != nil {
 				return err
 			}
@@ -66,7 +68,7 @@ var fetchCampaigns = func(ctx context.Context, timestamp time.Time, userId strin
 			for rows.Next() {
 				var camp CampaignAd
 				var geo sql.NullString
-				err = rows.Scan(&camp.Id, &camp.Description, &camp.Link, &camp.Image, &camp.Ratio, &camp.Placeholder, &camp.Source, &camp.Company, &camp.Probability, &camp.Fallback, &geo, &camp.IsTagTargeted)
+				err = rows.Scan(&camp.Id, &camp.Description, &camp.Link, &camp.Image, &camp.Ratio, &camp.Placeholder, &camp.Source, &camp.Company, &camp.Probability, &camp.Fallback, &geo, &camp.IsTagTargeted, &camp.IsExpTargeted)
 				if err != nil {
 					return err
 				}
@@ -74,7 +76,7 @@ var fetchCampaigns = func(ctx context.Context, timestamp time.Time, userId strin
 				if geo.Valid && len(geo.String) > 0 {
 					camp.Geo = geo.String
 					if !camp.Fallback {
-						if camp.IsTagTargeted {
+						if camp.IsTagTargeted || camp.IsExpTargeted {
 							camp.ProviderId = "direct-combined"
 						} else {
 							camp.ProviderId = "direct-geo"
@@ -83,7 +85,7 @@ var fetchCampaigns = func(ctx context.Context, timestamp time.Time, userId strin
 				} else {
 					camp.Geo = ""
 					if !camp.Fallback {
-						if camp.IsTagTargeted {
+						if camp.IsTagTargeted || camp.IsExpTargeted {
 							camp.ProviderId = "direct-keywords"
 						} else {
 							camp.ProviderId = "direct"

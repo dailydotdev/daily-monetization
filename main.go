@@ -595,9 +595,9 @@ func subscribeToDeleteOldTags() {
 func createBackgroundApp() {
 	go subscribeToNewAd()
 	go subscribeToView()
-	//go subscribeToUserCreated()
-	//go subscribeToUserUpdated()
-	//go subscribeToUserDeleted()
+	go subscribeToUserCreated()
+	go subscribeToUserUpdated()
+	go subscribeToUserDeleted()
 	subscribeToDeleteOldTags()
 }
 
