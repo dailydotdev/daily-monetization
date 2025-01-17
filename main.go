@@ -15,12 +15,13 @@ import (
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"contrib.go.opencensus.io/exporter/stackdriver/propagation"
 	"github.com/afex/hystrix-go/hystrix"
-	"github.com/dailydotdev/platform-go-common/util"
 	log "github.com/sirupsen/logrus"
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/trace"
 	_ "go.uber.org/automaxprocs"
 	"google.golang.org/api/option"
+
+	"github.com/dailydotdev/platform-go-common/util"
 )
 
 var gcpOpts []option.ClientOption
@@ -594,9 +595,9 @@ func subscribeToDeleteOldTags() {
 func createBackgroundApp() {
 	go subscribeToNewAd()
 	go subscribeToView()
-	go subscribeToUserCreated()
-	go subscribeToUserUpdated()
-	go subscribeToUserDeleted()
+	//go subscribeToUserCreated()
+	//go subscribeToUserUpdated()
+	//go subscribeToUserDeleted()
 	subscribeToDeleteOldTags()
 }
 
