@@ -6,6 +6,7 @@
 |------------|---------------------|-------------|
 | `x-migrations-table` | `MigrationsTable` | Name of the migrations table |
 | `x-no-lock` | `NoLock` | Set to `true` to skip `GET_LOCK`/`RELEASE_LOCK` statements. Useful for [multi-master MySQL flavors](https://www.percona.com/doc/percona-xtradb-cluster/LATEST/features/pxc-strict-mode.html#explicit-table-locking). Only run migrations from one host when this is enabled. |
+| `x-statement-timeout` | `StatementTimeout` | Abort any statement that takes more than the specified number of milliseconds, functionally similar to [Server-side SELECT statement timeouts](https://dev.mysql.com/blog-archive/server-side-select-statement-timeouts/) but enforced by the client. Available for all versions of MySQL, not just >=5.7. | 
 | `dbname` | `DatabaseName` | The name of the database to connect to |
 | `user` | | The user to sign in as |
 | `password` | | The user's password | 
@@ -28,9 +29,9 @@ import (
     "database/sql"
     
     _ "github.com/go-sql-driver/mysql"
-    "github.com/golang-migrate/migrate"
-    "github.com/golang-migrate/migrate/database/mysql"
-    _ "github.com/golang-migrate/migrate/source/file"
+    "github.com/golang-migrate/migrate/v4"
+    "github.com/golang-migrate/migrate/v4/database/mysql"
+    _ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 func main() {

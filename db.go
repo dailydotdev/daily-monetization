@@ -15,13 +15,14 @@ import (
 
 var dbConnString = os.Getenv("DB_CONNECTION_STRING")
 
-const migrationVer uint = 9
+const migrationVer uint = 11
 
 var db *sql.DB
 var hystrixDb = "db"
 var campStmt *sql.Stmt
 var addCampStmt *sql.Stmt
 var getUserTagsStmt *sql.Stmt
+var getUserExperienceLevelStmt *sql.Stmt
 
 func openDatabaseConnection() (*sql.DB, error) {
 	conn, err := sql.Open("mysql", dbConnString+"?charset=utf8mb4,utf8")
@@ -109,12 +110,18 @@ func initializeDatabase() {
 	if err != nil {
 		log.Fatal("failed to prepare query ", err)
 	}
+
+	getUserExperienceLevelStmt, err = db.Prepare("select experience_level from user_experience_levels where user_id = ?")
+	if err != nil {
+		log.Fatal("failed to prepare query ", err)
+	}
 }
 
 func tearDatabase() {
 	addCampStmt.Close()
 	campStmt.Close()
 	getUserTagsStmt.Close()
+	getUserExperienceLevelStmt.Close()
 
 	db.Close()
 }

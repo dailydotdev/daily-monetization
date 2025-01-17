@@ -88,6 +88,11 @@
                 "CreateMetricDescriptor"
               ]
             },
+            "CreateServiceTimeSeries": {
+              "methods": [
+                "CreateServiceTimeSeries"
+              ]
+            },
             "CreateTimeSeries": {
               "methods": [
                 "CreateTimeSeries"
@@ -253,6 +258,35 @@
             "UpdateServiceLevelObjective": {
               "methods": [
                 "UpdateServiceLevelObjective"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "SnoozeService": {
+      "clients": {
+        "grpc": {
+          "libraryClient": "SnoozeClient",
+          "rpcs": {
+            "CreateSnooze": {
+              "methods": [
+                "CreateSnooze"
+              ]
+            },
+            "GetSnooze": {
+              "methods": [
+                "GetSnooze"
+              ]
+            },
+            "ListSnoozes": {
+              "methods": [
+                "ListSnoozes"
+              ]
+            },
+            "UpdateSnooze": {
+              "methods": [
+                "UpdateSnooze"
               ]
             }
           }

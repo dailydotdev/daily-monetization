@@ -15,6 +15,7 @@ import (
 	"contrib.go.opencensus.io/exporter/stackdriver"
 	"contrib.go.opencensus.io/exporter/stackdriver/propagation"
 	"github.com/afex/hystrix-go/hystrix"
+	"github.com/dailydotdev/platform-go-common/util"
 	log "github.com/sirupsen/logrus"
 	"go.opencensus.io/plugin/ochttp"
 	"go.opencensus.io/trace"
@@ -384,6 +385,45 @@ func View(ctx context.Context, log *log.Entry, data ViewMessage) error {
 	return nil
 }
 
+type ExperienceMessage struct {
+	UserId          string `json:"id"`
+	ExperienceLevel string `json:"experienceLevel"`
+}
+
+var allowedExperienceLevels = []string{
+	"LESS_THAN_1_YEAR",
+	"MORE_THAN_1_YEAR",
+	"MORE_THAN_2_YEARS",
+	"MORE_THAN_4_YEARS",
+	"NOT_ENGINEER",
+	"MORE_THAN_10_YEARS",
+	"MORE_THAN_6_YEARS",
+}
+
+func ExperienceLevel(ctx context.Context, log *log.Entry, data ExperienceMessage) error {
+	if data.ExperienceLevel != "" && util.Contains[string](allowedExperienceLevels, data.ExperienceLevel) {
+		if err := setOrUpdateExperienceLevel(ctx, data.UserId, data.ExperienceLevel); err != nil {
+			log.WithField("experience", data).Errorf("setOrUpdateExperienceLevel %v", err)
+			return err
+		}
+	}
+	return nil
+}
+
+type UserDeletedMessage struct {
+	UserId string `json:"id"`
+}
+
+func DeleteUserExperienceLevel(ctx context.Context, log *log.Entry, data UserDeletedMessage) error {
+	if data.UserId != "" {
+		if err := deleteUserExperienceLevel(ctx, data.UserId); err != nil {
+			log.WithField("user_deleted", data).Errorf("deleteUserExperienceLevel %v", err)
+			return err
+		}
+	}
+	return nil
+}
+
 func DeleteOldTags(ctx context.Context, log *log.Entry) error {
 	if err := deleteOldTags(ctx); err != nil {
 		log.Errorf("deleteOldTags %v", err)
@@ -458,6 +498,81 @@ func subscribeToView() {
 	}
 }
 
+func subscribeToUserCreated() {
+	const sub = "monetization-user-created"
+	log.Info("receiving messages from ", sub)
+	ctx := context.Background()
+	err := pubsubClient.Subscription(sub).Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
+		childLog := log.WithField("messageId", msg.ID)
+		var data ExperienceMessage
+		if err := json.Unmarshal(msg.Data, &data); err != nil {
+			childLog.Errorf("failed to decode message %v", err)
+			msg.Ack()
+			return
+		}
+
+		if err := ExperienceLevel(ctx, childLog, data); err != nil {
+			msg.Nack()
+		} else {
+			msg.Ack()
+		}
+	})
+
+	if err != nil {
+		log.Fatal("failed to receive messages from pubsub ", err)
+	}
+}
+
+func subscribeToUserUpdated() {
+	const sub = "monetization-user-updated"
+	log.Info("receiving messages from ", sub)
+	ctx := context.Background()
+	err := pubsubClient.Subscription(sub).Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
+		childLog := log.WithField("messageId", msg.ID)
+		var data ExperienceMessage
+		if err := json.Unmarshal(msg.Data, &data); err != nil {
+			childLog.Errorf("failed to decode message %v", err)
+			msg.Ack()
+			return
+		}
+
+		if err := ExperienceLevel(ctx, childLog, data); err != nil {
+			msg.Nack()
+		} else {
+			msg.Ack()
+		}
+	})
+
+	if err != nil {
+		log.Fatal("failed to receive messages from pubsub ", err)
+	}
+}
+
+func subscribeToUserDeleted() {
+	const sub = "monetization-user-deleted"
+	log.Info("receiving messages from ", sub)
+	ctx := context.Background()
+	err := pubsubClient.Subscription(sub).Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
+		childLog := log.WithField("messageId", msg.ID)
+		var data UserDeletedMessage
+		if err := json.Unmarshal(msg.Data, &data); err != nil {
+			childLog.Errorf("failed to decode message %v", err)
+			msg.Ack()
+			return
+		}
+
+		if err := DeleteUserExperienceLevel(ctx, childLog, data); err != nil {
+			msg.Nack()
+		} else {
+			msg.Ack()
+		}
+	})
+
+	if err != nil {
+		log.Fatal("failed to receive messages from pubsub ", err)
+	}
+}
+
 func subscribeToDeleteOldTags() {
 	const sub = "monetization-delete-old-tags"
 	log.Info("receiving messages from ", sub)
@@ -479,6 +594,9 @@ func subscribeToDeleteOldTags() {
 func createBackgroundApp() {
 	go subscribeToNewAd()
 	go subscribeToView()
+	go subscribeToUserCreated()
+	go subscribeToUserUpdated()
+	go subscribeToUserDeleted()
 	subscribeToDeleteOldTags()
 }
 
