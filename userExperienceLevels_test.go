@@ -42,12 +42,10 @@ func TestDeleteUserExperienceLevel(t *testing.T) {
 	err = deleteUserExperienceLevel(context.Background(), "1")
 	require.NoError(t, err)
 
-	rows, err := db.Query("SELECT count(*) FROM user_experience_levels")
+	row := db.QueryRow("SELECT count(*) FROM user_experience_levels")
 	require.NoError(t, err)
-	defer rows.Close()
-	rows.Next()
 	var count int
-	require.NoError(t, rows.Scan(&count))
+	require.NoError(t, row.Scan(&count))
 	require.Equal(t, 1, count)
 }
 
