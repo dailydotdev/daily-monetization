@@ -1,4 +1,4 @@
-CREATE TABLE `user_experience_levels` (
+CREATE TABLE IF NOT EXISTS `user_experience_levels` (
   `user_id` varchar(255) NOT NULL,
   `experience_level` varchar(255) CHARACTER SET utf8mb4 NOT NULL,
   `d_update` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
