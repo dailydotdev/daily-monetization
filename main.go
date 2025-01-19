@@ -386,9 +386,17 @@ func View(ctx context.Context, log *log.Entry, data ViewMessage) error {
 	return nil
 }
 
-type ExperienceMessage struct {
-	UserId          string `json:"id"`
+type user struct {
+	Id              string `json:"id"`
 	ExperienceLevel string `json:"experienceLevel"`
+}
+
+type UserCreatedMessage struct {
+	User user `json:"user"`
+}
+
+type UserUpdatedMessage struct {
+	NewProfile user `json:"newProfile"`
 }
 
 var allowedExperienceLevels = []string{
@@ -401,9 +409,19 @@ var allowedExperienceLevels = []string{
 	"MORE_THAN_6_YEARS",
 }
 
-func ExperienceLevel(ctx context.Context, log *log.Entry, data ExperienceMessage) error {
-	if data.ExperienceLevel != "" && util.Contains[string](allowedExperienceLevels, data.ExperienceLevel) {
-		if err := setOrUpdateExperienceLevel(ctx, data.UserId, data.ExperienceLevel); err != nil {
+func CreateUserExperienceLevel(ctx context.Context, log *log.Entry, data UserCreatedMessage) error {
+	if data.User.ExperienceLevel != "" && util.Contains[string](allowedExperienceLevels, data.User.ExperienceLevel) {
+		if err := setOrUpdateExperienceLevel(ctx, data.User.Id, data.User.ExperienceLevel); err != nil {
+			log.WithField("experience", data).Errorf("setOrUpdateExperienceLevel %v", err)
+			return err
+		}
+	}
+	return nil
+}
+
+func UpdateUserExperienceLevel(ctx context.Context, log *log.Entry, data UserUpdatedMessage) error {
+	if data.NewProfile.ExperienceLevel != "" && util.Contains[string](allowedExperienceLevels, data.NewProfile.ExperienceLevel) {
+		if err := setOrUpdateExperienceLevel(ctx, data.NewProfile.Id, data.NewProfile.ExperienceLevel); err != nil {
 			log.WithField("experience", data).Errorf("setOrUpdateExperienceLevel %v", err)
 			return err
 		}
@@ -505,14 +523,14 @@ func subscribeToUserCreated() {
 	ctx := context.Background()
 	err := pubsubClient.Subscription(sub).Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
 		childLog := log.WithField("messageId", msg.ID)
-		var data ExperienceMessage
+		var data UserCreatedMessage
 		if err := json.Unmarshal(msg.Data, &data); err != nil {
 			childLog.Errorf("failed to decode message %v", err)
 			msg.Ack()
 			return
 		}
 
-		if err := ExperienceLevel(ctx, childLog, data); err != nil {
+		if err := CreateUserExperienceLevel(ctx, childLog, data); err != nil {
 			msg.Nack()
 		} else {
 			msg.Ack()
@@ -530,14 +548,14 @@ func subscribeToUserUpdated() {
 	ctx := context.Background()
 	err := pubsubClient.Subscription(sub).Receive(ctx, func(ctx context.Context, msg *pubsub.Message) {
 		childLog := log.WithField("messageId", msg.ID)
-		var data ExperienceMessage
+		var data UserUpdatedMessage
 		if err := json.Unmarshal(msg.Data, &data); err != nil {
 			childLog.Errorf("failed to decode message %v", err)
 			msg.Ack()
 			return
 		}
 
-		if err := ExperienceLevel(ctx, childLog, data); err != nil {
+		if err := UpdateUserExperienceLevel(ctx, childLog, data); err != nil {
 			msg.Nack()
 		} else {
 			msg.Ack()
