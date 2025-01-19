@@ -2,8 +2,6 @@ module github.com/dailydotdev/daily-monetization
 
 go 1.23
 
-toolchain go1.23.5
-
 require (
 	cloud.google.com/go/pubsub v1.34.0
 	contrib.go.opencensus.io/exporter/stackdriver v0.13.14
