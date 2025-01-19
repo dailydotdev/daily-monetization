@@ -1,12 +1,14 @@
 version: 2.1
 orbs:
-  gcp-gcr: circleci/gcp-gcr@0.15.0
-  gcp-cli: circleci/gcp-cli@2.4.1
+  gcp-gcr: circleci/gcp-gcr@0.16.2
+  gcp-cli: circleci/gcp-cli@3.1.1
   pulumi: pulumi/pulumi@2.0.0
+  slack: circleci/slack@4.12.1
+
 jobs:
   build:
     docker:
-      - image: cimg/go:1.22
+      - image: cimg/go:1.23
       - image: mysql:5.7
         environment:
           MYSQL_DATABASE: test
@@ -15,6 +17,15 @@ jobs:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "go.sum" }}
+      - run:
+          name: Setup Environment Variables
+          command: |
+            echo 'export GOPROXY=https://${GOPROXY_USER}:${GOPROXY_PASS}@${GOPROXY_HOST},direct' >> $BASH_ENV
+            echo 'export IMAGE_NAME=gcr.io/${GOOGLE_PROJECT_ID}/${CIRCLE_PROJECT_REPONAME}' >> $BASH_ENV
+            echo 'export IMAGE_TAG=${CIRCLE_SHA1}' >> $BASH_ENV
+      - run:
+          name: Vendor
+          command: if [ ! -d ./vendor ]; then go mod vendor; fi
       - run:
           name: Build
           command: go build -o main
@@ -31,7 +42,7 @@ jobs:
             echo -n .
             sleep 1
             done
-            echo Failed waiting for Postgress && exit 1
+            echo Failed waiting for Mysql && exit 1
       - run:
           name: Create service account
           command: echo $GCLOUD_SERVICE_KEY > key.json
@@ -84,7 +95,7 @@ jobs:
     steps:
       - checkout
       - gcp-cli/install
-      - gcp-cli/initialize
+      - gcp-cli/setup
       - run:
           name: Install GKE Auth plugin
           command: gcloud components install gke-gcloud-auth-plugin
@@ -104,7 +115,8 @@ jobs:
 workflows:
   build:
     jobs:
-      - build
+      - build:
+          context: GCR
       - build_and_push_docker:
           requires:
             - build
